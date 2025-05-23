@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "883016729268",
+    "project_id": "allycall",
+    "storage_bucket": "allycall.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:883016729268:android:3d1f36312d60e0c5d90de1",
+        "android_client_info": {
+          "package_name": "com.example.allycall"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "883016729268-lkn8j4s2vhtm63781iijvpfuufg0ft4n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.allycall",
+            "certificate_hash": "9e38f4de36e2e82d43edf6bb852f7baa473de250"
+          }
+        },
+        {
+          "client_id": "883016729268-f0tfca0gfl5f1q4e69udnj5r7e9trhr8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYpU8NhusEZyHlqx49kSDbNSt03jAAFOQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "883016729268-f0tfca0gfl5f1q4e69udnj5r7e9trhr8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "883016729268-te1gqudtj6v1lpm4v4qjn3641s9fo1nl.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.allycall"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
