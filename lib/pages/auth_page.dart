@@ -77,7 +77,7 @@ class _AuthPageState extends State<AuthPage> {
     }
   }
 
-  Future<void> _loginWithGoogle() async {
+  Future<void> _signInWithGoogle() async {
     final messenger = ScaffoldMessenger.of(context);
     try {
       await _authService.signInWithGoogle();
@@ -265,7 +265,7 @@ class _AuthPageState extends State<AuthPage> {
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
-                        onPressed: _loginWithGoogle,
+                        onPressed: _signInWithGoogle,
                         icon: Iconify(Logos.google_icon, size: 20),
                         label: const Text(
                           'Sign in with Google',

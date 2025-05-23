@@ -1,7 +1,7 @@
+import 'package:allycall/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:iconify_flutter/icons/pepicons.dart';
-import 'package:iconify_flutter/icons/gg.dart';
 
 class CustomTabBar extends StatefulWidget {
   final TabController tabController;
@@ -75,7 +75,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
                   Tab(icon: Iconify(Pepicons.map, size: 30, color: getColor(1))),
                   const SizedBox(width: 5), // Floating button placeholder
                   Tab(icon: Iconify(svgBulb, size: 30, color: getColor(3))),
-                  Tab(icon: Iconify(Gg.profile, size: 30, color: getColor(4))),
+                  Tab(icon: AuthService().getProfileImage(size: 30, fallbackColor: getColor(4)))
                 ],
               ),
             ),
