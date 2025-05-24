@@ -1,45 +1,44 @@
+import 'package:allycall/services/api_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:allycall/state/global_flags.dart';
-import 'package:iconify_flutter/iconify_flutter.dart';
-import 'package:iconify_flutter/icons/gg.dart';
+import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final api = ApiService();
 
-  Widget getProfileImage({
-    double size = 100,
-    bool isCircular = true,
-    Color? fallbackColor,
-  }) {
-    Widget fallbackIcon() =>
-        Iconify(Gg.profile, size: size, color: fallbackColor ?? Colors.grey);
-    final photoUrl = FirebaseAuth.instance.currentUser?.photoURL;
-    if (photoUrl == null || photoUrl.isEmpty) {
-      return fallbackIcon();
-    }
-
-    final image = CachedNetworkImage(
-      imageUrl: photoUrl,
-      height: size,
-      width: size,
-      fit: BoxFit.cover,
-      errorWidget: (context, url, error) {
-        print(error);
-        return fallbackIcon();
-      },
-      placeholder:
-          (context, url) =>
-              const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-    );
-
-    return isCircular
-        ? ClipOval(child: image)
-        : ClipRRect(borderRadius: BorderRadius.circular(12), child: image);
+Future<Widget?> getProfileImage({ double size = 100 }) async {
+  final user = await api.get('users/${_auth.currentUser?.uid}');
+  final imageUrl = user['image_url'];
+  if (imageUrl == null || imageUrl.isEmpty) {
+    return null;
   }
+
+  try {
+    final response = await http.head(Uri.parse(imageUrl));
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
+          height: size,
+          width: size,
+          fit: BoxFit.cover,
+          placeholder: (context, url) =>
+              const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        ),
+      );
+    } else {
+      return null;
+    }
+  } catch (e) {
+    print('Image check failed: $e');
+    return null;
+  }
+}
 
   getUserName() {
     return _auth.currentUser?.displayName ?? "Guest";
@@ -69,15 +68,18 @@ class AuthService {
 
       if (isFirstTime) {
         GlobalFlags.isNewUser = true;
+        await api.post("users", {
+          'id': user.uid,
+          'email': user.email,
+          'username': user.displayName,
+          'image_url': user.photoURL
+        });
       }
     }
   }
 
   Future<void> signIn(String email, String password) async {
-    await _auth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+    await _auth.signInWithEmailAndPassword(email: email, password: password);
   }
 
   Future<void> register(String email, String password, String username) async {
@@ -90,6 +92,12 @@ class AuthService {
       await user.updateDisplayName(username);
       await sendVerificationEmail();
       GlobalFlags.isNewUser = true;
+
+      await api.post("users", {
+        'id': user.uid,
+        'email': user.email,
+        'username': username,
+      });
     }
   }
 
