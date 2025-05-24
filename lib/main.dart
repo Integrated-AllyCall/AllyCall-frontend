@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFFAA6A8)),
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
-            foregroundColor: const Color(0xFFFAA6A8), // Text and Icon color
+            foregroundColor: const Color(0xFF6F55D3), // Text and Icon color
             overlayColor: Colors.black, // Hover color
             textStyle: GoogleFonts.kanit(),
           ),

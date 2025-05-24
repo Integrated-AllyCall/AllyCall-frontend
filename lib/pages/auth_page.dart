@@ -122,7 +122,7 @@ class _AuthPageState extends State<AuthPage> {
         children: [
           Container(
             height: 300,
-            color: const Color(0xFFFAA6A8),
+            color: const Color(0xFF7C55D4),
             child: Align(
               alignment: Alignment.topCenter,
               child: Padding(
@@ -160,12 +160,12 @@ class _AuthPageState extends State<AuthPage> {
                     ),
                     Text(
                       _isLogin
-                          ? 'Login to your account'
+                          ? 'Take control of your safety'
                           : 'Create your new account',
                       style: GoogleFonts.livvic(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFFFAA6A8),
+                        color: const Color(0xFF7C55D4),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -243,7 +243,12 @@ class _AuthPageState extends State<AuthPage> {
                         ),
                         TextButton(
                           onPressed: () => setState(() => _isLogin = !_isLogin),
-                          child: Text(_isLogin ? 'Register Now' : 'Log in'),
+                          child: Text(
+                            _isLogin ? 'Register Now' : 'Log in',
+                            style: TextStyle(
+                              color: const Color(0xFF7C55D4),
+                            ),
+                          ),
                         ),
                       ],
                     ),

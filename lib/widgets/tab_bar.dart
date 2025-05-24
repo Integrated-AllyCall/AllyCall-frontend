@@ -45,7 +45,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
 ''';
 
     final selected = widget.tabController.index;
-    const selectedColor = Color(0xFFFAA6A8);
+    const selectedColor = Color(0xFF6F55D3);
     const unselectedColor = Color(0xFF8A8A8A);
 
     Color getColor(int index) => selected == index ? selectedColor : unselectedColor;
@@ -149,7 +149,7 @@ class _DotPainter extends BoxPainter {
 
     final Offset circleOffset = Offset(
       offset.dx + configuration.size!.width / 2,
-      offset.dy + configuration.size!.height - 18,
+      offset.dy + configuration.size!.height - 15,
     );
 
     canvas.drawCircle(circleOffset, 3, paint);

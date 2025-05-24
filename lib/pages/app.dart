@@ -80,7 +80,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
       body: TabBarView(
         controller: _tabController,
         children: [
-          HomePage(),
+          HomePage(tabController: _tabController,),
           MapPage(),
           FakeCallPage(),
           GuidePage(),
