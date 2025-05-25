@@ -26,6 +26,7 @@ class _FakeCallPageState extends State<FakeCallPage>
   List<Map<String, dynamic>> videos = [];
   TabController? _tabController;
   bool _isLoading = true;
+  String? selectedTag;
 
   Future<void> _initData() async {
     try {
@@ -35,16 +36,15 @@ class _FakeCallPageState extends State<FakeCallPage>
       _tabController = TabController(length: newTags.length, vsync: this);
       _tabController!.addListener(() {
         if (_tabController!.indexIsChanging) return;
-        final selectedTag = newTags[_tabController!.index];
-        _handleSearch(tag: selectedTag == 'All' ? null : selectedTag);
+        selectedTag = newTags[_tabController!.index]=='All'? null : newTags[_tabController!.index];
+        _handleSearch();
       });
 
       setState(() {
         _tags = newTags;
         _isLoading = false;
       });
-
-      await _handleSearch(); // Initial video fetch
+      _handleSearch();
     } catch (e) {
       print("Error loading data: $e");
     }
@@ -56,14 +56,14 @@ class _FakeCallPageState extends State<FakeCallPage>
     _initData();
   }
 
-  Future<void> _handleSearch({String? search, String? tag}) async {
+  Future<void> _handleSearch({String? search}) async {
     String query = '';
     if (search != null && search.isNotEmpty) {
       query += 'search=$search';
     }
-    if (tag != null && tag.isNotEmpty) {
+    if (selectedTag != null && selectedTag!.isNotEmpty) {
       if (query.isNotEmpty) query += '&';
-      query += 'tag=$tag';
+      query += 'tag=$selectedTag';
     }
 
     final response = await api.get('videos?$query');
