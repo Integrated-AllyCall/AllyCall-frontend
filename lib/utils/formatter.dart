@@ -10,3 +10,23 @@ String formatDuration(double seconds) {
     return '${minutes.toString().padLeft(1, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 }
+
+String getCompactShortAddress(Map<String, dynamic> placeDetail) {
+  final components = placeDetail['address_components'] as List;
+
+  String? get(String type) {
+    final comp = components.firstWhere(
+      (c) => (c['types'] as List).contains(type),
+      orElse: () => null,
+    );
+    return comp?['short_name'];
+  }
+
+  final district = get("sublocality") ?? get("sublocality_level_1");
+  final city =
+      get("locality") ??
+      get("administrative_area_level_2") ??
+      get("administrative_area_level_1");
+  final country = get("country");
+  return [district, city, country].where((e) => e != null).join(', ');
+}
