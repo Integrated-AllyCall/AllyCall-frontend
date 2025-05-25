@@ -1,4 +1,5 @@
 import 'package:allycall/services/api_service.dart';
+import 'package:allycall/widgets/thumbnail_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 
@@ -19,31 +20,80 @@ class FakeCallPage extends StatefulWidget {
   State<FakeCallPage> createState() => _FakeCallPageState();
 }
 
-class _FakeCallPageState extends State<FakeCallPage> {
+class _FakeCallPageState extends State<FakeCallPage>
+    with SingleTickerProviderStateMixin {
   List<String> _tags = [];
-  Future<void> fetchVideoTag() async {
-    final response = await api.get('videos/tags');
-    setState(() {
-      _tags = List<String>.from(response);
-    });
+  List<Map<String, dynamic>> videos = [];
+  TabController? _tabController;
+  bool _isLoading = true;
+
+  Future<void> _initData() async {
+    try {
+      final tagResponse = await api.get('videos/tags');
+      final newTags = ['All', ...List<String>.from(tagResponse)];
+
+      _tabController = TabController(length: newTags.length, vsync: this);
+      _tabController!.addListener(() {
+        if (_tabController!.indexIsChanging) return;
+        final selectedTag = newTags[_tabController!.index];
+        _handleSearch(tag: selectedTag == 'All' ? null : selectedTag);
+      });
+
+      setState(() {
+        _tags = newTags;
+        _isLoading = false;
+      });
+
+      await _handleSearch(); // Initial video fetch
+    } catch (e) {
+      print("Error loading data: $e");
+    }
   }
+
   @override
   void initState() {
-    fetchVideoTag();
     super.initState();
+    _initData();
   }
+
+  Future<void> _handleSearch({String? search, String? tag}) async {
+    String query = '';
+    if (search != null && search.isNotEmpty) {
+      query += 'search=$search';
+    }
+    if (tag != null && tag.isNotEmpty) {
+      if (query.isNotEmpty) query += '&';
+      query += 'tag=$tag';
+    }
+
+    final response = await api.get('videos?$query');
+    setState(() {
+      videos = List<Map<String, dynamic>>.from(response);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: _tags.length,
-      child: Scaffold(
+    if (_isLoading || _tabController == null) {
+      return const Scaffold(
         backgroundColor: Color(0xFFF7F6FC),
-        body: SafeArea(
-          child: CustomScrollView(
-            slivers: <Widget>[
-              _buildAppBar(context),
-            ],
-          ),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF7F6FC),
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: <Widget>[
+            _buildAppBar(context),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              sliver: SliverToBoxAdapter(
+                child: ThumbnailGrid(videos: videos, crossAxisCount: 2),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -69,6 +119,8 @@ class _FakeCallPageState extends State<FakeCallPage> {
                     height: 40,
                     width: 360,
                     child: TextField(
+                      onSubmitted: (value) =>
+                          _handleSearch(search: value),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.white,
@@ -77,9 +129,10 @@ class _FakeCallPageState extends State<FakeCallPage> {
                           borderSide: BorderSide.none,
                         ),
                         hintText: "Find a call scenario...",
-                        hintStyle: TextStyle(color: Color(0xFF8A8A8A)),
+                        hintStyle:
+                            const TextStyle(color: Color(0xFF8A8A8A)),
                         prefixIcon: const Icon(Icons.search),
-                        prefixIconColor: Color(0xFF8A8A8A),
+                        prefixIconColor: const Color(0xFF8A8A8A),
                       ),
                     ),
                   ),
@@ -99,7 +152,7 @@ class _FakeCallPageState extends State<FakeCallPage> {
                     ),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    backgroundColor: Color(0xFF6E56C9),
+                    backgroundColor: const Color(0xFF6E56C9),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
@@ -109,6 +162,7 @@ class _FakeCallPageState extends State<FakeCallPage> {
             ),
           ),
           TabBar(
+            controller: _tabController,
             labelPadding: const EdgeInsets.symmetric(horizontal: 12),
             isScrollable: true,
             indicatorColor: const Color(0xFF6E56C9),
@@ -125,3 +179,4 @@ class _FakeCallPageState extends State<FakeCallPage> {
     );
   }
 }
+
