@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         textTheme: GoogleFonts.kanitTextTheme(),
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFFAA6A8)),
+        colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFF6F55D3)),
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
             foregroundColor: const Color(0xFF6F55D3), // Text and Icon color

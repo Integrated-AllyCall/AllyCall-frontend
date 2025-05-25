@@ -7,6 +7,7 @@ import 'package:iconify_flutter/icons/ant_design.dart';
 import 'package:iconify_flutter/icons/gg.dart';
 
 final api = ApiService();
+
 const svgPhone = '''
 <svg width="20" height="25" viewBox="0 0 20 25" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M9.58327 8.43654L7.58468 10.2297C7.84888 11.134 8.21791 12.0043 8.68427 12.8228C9.17071 13.6354 9.75687 14.3839 10.4291 15.051L13.0174 14.2535C14.4674 13.8064 16.0503 14.2655 17.0145 15.4135L18.4887 17.168C19.0855 17.8723 19.3848 18.7813 19.323 19.7025C19.2612 20.6236 18.8432 21.4845 18.1576 22.1028C15.753 24.2971 12.0507 25.039 9.27877 22.8616C6.84148 20.9446 4.78 18.593 3.19843 15.9258C1.61285 13.2717 0.551271 10.338 0.0712686 7.28379C-0.460398 3.84729 2.05535 1.09713 5.19219 0.159461C7.06269 -0.401206 9.05885 0.560628 9.74518 2.35379L10.5548 4.46838C11.0864 5.86038 10.7046 7.43121 9.58327 8.43654Z" fill="white"/>
@@ -37,6 +38,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   Widget? _profileImage;
   List<Map<String, dynamic>> videos = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchVideo();
+    loadProfileImage();
+  }
+
   Future<void> fetchVideo() async {
     final response = await api.get('videos?num=3');
     setState(() {
@@ -52,189 +61,164 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  void initState() {
-    fetchVideo();
-    loadProfileImage();
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
           Container(
-            color: Color(0xFF7C55D4), // Purple background
+            color: const Color(0xFF7C55D4),
             child: CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  forceMaterialTransparency: true,
-                  expandedHeight: 160,
-                  floating: false,
-                  pinned: true,
-                  backgroundColor: Colors.transparent,
-                  flexibleSpace: FlexibleSpaceBar(
-                    background: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _profileImage ?? Iconify(Gg.profile, size: 40),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "Hello, ${AuthService().getUserName()}",
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  "Out alone today? AllyCall got your back",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Graphic
-                          Image.asset(
-                            'assets/graphic.png',
-                            // height: 80,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                SliverToBoxAdapter(
-                  child: Container(
-                    padding: const EdgeInsets.all(26),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF7F6FC),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        topRight: Radius.circular(30),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 10,
-                          offset: Offset(0, -5),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: Iconify(
-                                svgPhone,
-                                color: Color(0xFF6F55D3),
-                                size: 15,
-                              ),
-                            ),
-                            Text(
-                              'Fake a Call Now',
-                              style: TextStyle(fontWeight: FontWeight.w700),
-                            ),
-                            Spacer(),
-                            TextButton(
-                              onPressed:
-                                  () => widget.tabController.animateTo(2),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Color(0xFF8A8A8A),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: const [
-                                  Text('See more'),
-                                  SizedBox(width: 6),
-                                  Icon(Icons.arrow_forward_ios, size: 16),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 320,
-                          child: ThumbnailGrid(
-                            videos: videos,
-                            crossAxisCount: 3,
-                          ),
-                        ),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: Iconify(
-                                AntDesign.alert_filled,
-                                color: Color(0xFF6F55D3),
-                                size: 18,
-                              ),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  'Nearby Reports',
-                                  style: TextStyle(fontWeight: FontWeight.w700),
-                                ),
-                                SizedBox(height: 2),
-                                Text(
-                                  'Bangkok, Thailand',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF8A8A8A),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-
-                        Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: Iconify(
-                                svgBulb,
-                                color: Color(0xFF6F55D3),
-                                size: 18,
-                              ),
-                            ),
-                            Text(
-                              'Your Legal Safety Guide',
-                              style: TextStyle(fontWeight: FontWeight.w700),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 50),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+              slivers: [_buildSliverAppBar(), _buildMainContent()],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  SliverAppBar _buildSliverAppBar() {
+    return SliverAppBar(
+      forceMaterialTransparency: true,
+      expandedHeight: 160,
+      floating: false,
+      pinned: true,
+      backgroundColor: Colors.transparent,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _profileImage ?? Iconify(Gg.profile, size: 40),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Hello, ${AuthService().getUserName()}",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      "Out alone today? AllyCall got your back",
+                      style: TextStyle(fontSize: 14, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+              Image.asset('assets/graphic.png'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  SliverToBoxAdapter _buildMainContent() {
+    return SliverToBoxAdapter(
+      child: Container(
+        padding: const EdgeInsets.all(26),
+        decoration: const BoxDecoration(
+          color: Color(0xFFF7F6FC),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 10,
+              offset: Offset(0, -5),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionHeader(
+              icon: svgPhone,
+              title: 'Fake a Call Now',
+              trailing: TextButton(
+                onPressed: () => widget.tabController.animateTo(2),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF8A8A8A),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Text('See more'),
+                    SizedBox(width: 6),
+                    Icon(Icons.arrow_forward_ios, size: 16),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 320,
+              child: ThumbnailGrid(videos: videos, crossAxisCount: 3),
+            ),
+            const SizedBox(height: 24),
+            _buildSectionHeader(
+              icon: AntDesign.alert_filled,
+              title: 'Nearby Reports',
+              subtitle: 'Bangkok, Thailand',
+            ),
+            const SizedBox(height: 24),
+            _buildSectionHeader(
+              icon: svgBulb,
+              title: 'Your Legal Safety Guide',
+            ),
+            const SizedBox(height: 50),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader({
+    required dynamic icon,
+    required String title,
+    String? subtitle,
+    Widget? trailing,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child:
+              icon is IconData
+                  ? Icon(icon, color: const Color(0xFF6F55D3), size: 18)
+                  : Iconify(icon, color: const Color(0xFF6F55D3), size: 18),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+              if (subtitle != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF8A8A8A),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (trailing != null) trailing,
+      ],
     );
   }
 }

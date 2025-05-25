@@ -1,3 +1,10 @@
+import 'package:intl/intl.dart';
+
+String formatDate(String isoDate) {
+  final dateTime = DateTime.parse(isoDate);
+  final formatter = DateFormat('MMM d, y'); // e.g. May 25, 2025
+  return formatter.format(dateTime);
+}
 String formatDuration(double seconds) {
   final int totalSeconds = seconds.floor();
   final int hours = totalSeconds ~/ 3600;
