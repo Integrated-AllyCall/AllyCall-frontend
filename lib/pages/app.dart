@@ -82,7 +82,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
         children: [
           HomePage(tabController: _tabController,),
           MapPage(),
-          FakeCallPage(),
+          FakeCallPage(tabController: _tabController),
           GuidePage(),
           ProfilePage(),
         ],

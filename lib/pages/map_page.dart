@@ -85,9 +85,7 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.white),
-      home: Scaffold(
+    return Scaffold(
         body: Stack(
           children: [
             // Google Map in background
@@ -168,7 +166,6 @@ class _MapPageState extends State<MapPage> {
             ),
           ],
         ),
-      ),
     );
   }
 }
