@@ -68,7 +68,7 @@ class _HomePageState extends State<HomePage> {
           Container(
             color: const Color(0xFF7C55D4),
             child: CustomScrollView(
-              slivers: [_buildSliverAppBar(), _buildMainContent()],
+              slivers: [_buildAppBar(), _buildMainContent()],
             ),
           ),
         ],
@@ -76,12 +76,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  SliverAppBar _buildSliverAppBar() {
+  SliverAppBar _buildAppBar() {
     return SliverAppBar(
       forceMaterialTransparency: true,
       expandedHeight: 160,
       floating: false,
-      pinned: true,
       backgroundColor: Colors.transparent,
       flexibleSpace: FlexibleSpaceBar(
         background: Padding(

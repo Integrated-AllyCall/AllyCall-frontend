@@ -101,12 +101,11 @@ class _FakeCallPageState extends State<FakeCallPage>
 
   SliverAppBar _buildAppBar(BuildContext context) {
     return SliverAppBar(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Color(0xFFF7F6FC),
       floating: true,
-      forceMaterialTransparency: true,
       automaticallyImplyLeading: false,
       titleSpacing: 0,
-      toolbarHeight: 120,
+      toolbarHeight: 70,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -161,7 +160,9 @@ class _FakeCallPageState extends State<FakeCallPage>
               ],
             ),
           ),
-          TabBar(
+        ],
+      ),
+      bottom: TabBar(
             controller: _tabController,
             labelPadding: const EdgeInsets.symmetric(horizontal: 12),
             isScrollable: true,
@@ -174,8 +175,6 @@ class _FakeCallPageState extends State<FakeCallPage>
             ),
             tabs: _tags.map((label) => Tab(text: label)).toList(),
           ),
-        ],
-      ),
     );
   }
 }

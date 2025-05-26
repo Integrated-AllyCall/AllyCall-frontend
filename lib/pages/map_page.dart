@@ -232,7 +232,7 @@ Widget buildReportBottomSheet(
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  formatDate(report['updated_at']),
+                  formatDate(report['created_at']),
                   style: const TextStyle(
                     fontSize: 13,
                     color: Color(0xFF8A8A8A),

@@ -11,34 +11,40 @@ class AuthService {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final api = ApiService();
 
-Future<Widget?> getProfileImage({ double size = 100 }) async {
-  final user = await api.get('users/${_auth.currentUser?.uid}');
-  final imageUrl = user['image_url'];
-  if (imageUrl == null || imageUrl.isEmpty) {
-    return null;
-  }
-
-  try {
-    final response = await http.head(Uri.parse(imageUrl));
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      return ClipOval(
-        child: CachedNetworkImage(
-          imageUrl: imageUrl,
-          height: size,
-          width: size,
-          fit: BoxFit.cover,
-          placeholder: (context, url) =>
-              const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-        ),
-      );
-    } else {
+  Future<Widget?> getProfileImage({double size = 100}) async {
+    final user = await api.get('users/${_auth.currentUser?.uid}');
+    final imageUrl = user['image_url'];
+    if (imageUrl == null || imageUrl.isEmpty) {
       return null;
     }
-  } catch (e) {
-    print('Image check failed: $e');
-    return null;
+
+    try {
+      final response = await http.head(Uri.parse(imageUrl));
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return ClipOval(
+          child: CachedNetworkImage(
+            imageUrl: imageUrl,
+            height: size,
+            width: size,
+            fit: BoxFit.cover,
+            placeholder:
+                (context, url) => const Center(
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+          ),
+        );
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Image check failed: $e');
+      return null;
+    }
   }
-}
+
+  getUserId() {
+    return _auth.currentUser?.uid;
+  }
 
   getUserName() {
     return _auth.currentUser?.displayName ?? "Guest";
@@ -72,7 +78,7 @@ Future<Widget?> getProfileImage({ double size = 100 }) async {
           'id': user.uid,
           'email': user.email,
           'username': user.displayName,
-          'image_url': user.photoURL
+          'image_url': user.photoURL,
         });
       }
     }
