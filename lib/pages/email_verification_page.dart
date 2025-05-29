@@ -58,7 +58,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAA6A8),
+      backgroundColor: const Color(0xFFA587E7),
       body: Center(
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -85,7 +85,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                 style: GoogleFonts.livvic(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFFFAA6A8),
+                  color: const Color(0xFF7C55D4),
                 ),
               ),
               const SizedBox(height: 10),

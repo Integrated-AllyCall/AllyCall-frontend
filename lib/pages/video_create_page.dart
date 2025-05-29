@@ -9,15 +9,15 @@ import 'package:video_thumbnail/video_thumbnail.dart';
 
 final api = ApiService();
 
-class VideoSettingPage extends StatefulWidget {
+class VideoCreatePage extends StatefulWidget {
   final File file;
-  const VideoSettingPage({super.key, required this.file});
+  const VideoCreatePage({super.key, required this.file});
 
   @override
-  State<VideoSettingPage> createState() => _VideoSettingPageState();
+  State<VideoCreatePage> createState() => _VideoCreatePageState();
 }
 
-class _VideoSettingPageState extends State<VideoSettingPage> {
+class _VideoCreatePageState extends State<VideoCreatePage> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
@@ -87,22 +87,22 @@ class _VideoSettingPageState extends State<VideoSettingPage> {
             ..files.add(
               await http.MultipartFile.fromPath('video', widget.file.path),
             );
-if (_thumbnailBytes != null) {
-      final tempDir = Directory.systemTemp;
-      final thumbFile = await File('${tempDir.path}/thumb.jpg').create();
-      await thumbFile.writeAsBytes(_thumbnailBytes!);
+      if (_thumbnailBytes != null) {
+        final tempDir = Directory.systemTemp;
+        final thumbFile = await File('${tempDir.path}/thumb.jpg').create();
+        await thumbFile.writeAsBytes(_thumbnailBytes!);
 
-      request.files.add(
-        await http.MultipartFile.fromPath('thumbnail', thumbFile.path),
-      );
-    }
+        request.files.add(
+          await http.MultipartFile.fromPath('thumbnail', thumbFile.path),
+        );
+      }
       final response = await request.send();
       if (response.statusCode == 201) {
         if (mounted) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('Upload successful')));
-          Navigator.pop(context);
+          Navigator.pop(context, true);
         }
       } else {
         debugPrint("Upload failed with status: ${response.statusCode}");
@@ -124,14 +124,24 @@ if (_thumbnailBytes != null) {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F6FC),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF6E56C9),
-        elevation: 0,
-        leading: const BackButton(color: Colors.white),
-        centerTitle: true,
-        title: const Text(
-          'Video Details',
-          style: TextStyle(color: Colors.white),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: AppBar(
+          backgroundColor: const Color(0xFF6F55D3),
+          elevation: 0,
+          leading: const BackButton(color: Colors.white),
+          centerTitle: true,
+          title: const Text(
+            'Video Details',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+            ),
+          ),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+          ),
         ),
       ),
       body: SingleChildScrollView(

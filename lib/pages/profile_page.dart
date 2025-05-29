@@ -65,66 +65,104 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   SliverAppBar _buildAppBar(BuildContext context) {
-  return SliverAppBar(
-    backgroundColor: Color(0xFFF7F6FC),
-    expandedHeight: 320,
-    pinned: true,
-    floating: false,
-    toolbarHeight: 0,
-    automaticallyImplyLeading: false,
-    flexibleSpace: FlexibleSpaceBar(
-      background: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            height: 60,
-            decoration: const BoxDecoration(
-              color: Color(0xFF6F55D3),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
+    return SliverAppBar(
+      backgroundColor: Color(0xFFF7F6FC),
+      expandedHeight: 320,
+      pinned: true,
+      floating: false,
+      toolbarHeight: 0,
+      automaticallyImplyLeading: false,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              height: 60,
+              decoration: const BoxDecoration(
+                color: Color(0xFF6F55D3),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                'Your Profile',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                ),
               ),
             ),
-            alignment: Alignment.center,
-            child: const Text(
-              'Your Profile',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
-              ),
+            const SizedBox(height: 20),
+            _profileImage ??
+                const Iconify(Gg.profile, size: 80, color: Color(0xFF8A8A8A)),
+            Text(
+              AuthService().getUserName(),
+              style: const TextStyle(fontSize: 16),
             ),
-          ),
-          const SizedBox(height: 20),
-          _profileImage ??
-              const Iconify(Gg.profile, size: 80, color: Color(0xFF8A8A8A)),
-          Text(AuthService().getUserName(), style: const TextStyle(fontSize: 16)),
-          Text(
-            AuthService().getUserEmail(),
-            style: const TextStyle(color: Color(0xFF8A8A8A)),
-          ),
-          const SizedBox(height: 15),
-          FloatingActionButton.extended(
-            onPressed: () {
-              AuthService().signOut;
-            },
-            icon: const Icon(Icons.logout, color: Colors.white),
-            label: const Text('Sign Out', style: TextStyle(color: Colors.white)),
-            backgroundColor: const Color(0xFFA587E7),
-          ),
-        ],
+            Text(
+              AuthService().getUserEmail(),
+              style: const TextStyle(color: Color(0xFF8A8A8A)),
+            ),
+            const SizedBox(height: 15),
+            FloatingActionButton.extended(
+              onPressed: () async {
+                final shouldLogout = await showDialog<bool>(
+                  context: context,
+                  builder:
+                      (context) => AlertDialog(
+                        backgroundColor: Colors.white,
+                        title: Text(
+                          'Confirm Logout',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        content: const Text(
+                          'Are you sure you want to log out?',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.black87,
+                            ),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Color(0xFF6F55D3),
+                            ),
+                            child: const Text('Logout'),
+                          ),
+                        ],
+                      ),
+                );
+                if (shouldLogout == true) {
+                  await AuthService().signOut();
+                }
+              },
+              icon: const Icon(Icons.logout, color: Colors.white),
+              label: const Text(
+                'Sign Out',
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: const Color(0xFFA587E7),
+            ),
+          ],
+        ),
       ),
-    ),
-    bottom: TabBar(
-      controller: _tabController,
-      labelPadding: const EdgeInsets.symmetric(horizontal: 12),
-      indicatorColor: const Color(0xFF6E56C9),
-      labelColor: Colors.black,
-      unselectedLabelColor: const Color(0xFF8A8A8A),
-      labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-      tabs: const <Widget>[Tab(text: 'Video'), Tab(text: 'Report')],
-    ),
-  );
-}
-
+      bottom: TabBar(
+        controller: _tabController,
+        labelPadding: const EdgeInsets.symmetric(horizontal: 12),
+        indicatorColor: const Color(0xFF6E56C9),
+        labelColor: Colors.black,
+        unselectedLabelColor: const Color(0xFF8A8A8A),
+        labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        tabs: const <Widget>[Tab(text: 'Video'), Tab(text: 'Report')],
+      ),
+    );
+  }
 }

@@ -1,5 +1,7 @@
+import 'package:allycall/pages/video_edit_page.dart';
 import 'package:allycall/pages/video_player_page.dart';
 import 'package:allycall/services/api_service.dart';
+import 'package:allycall/services/auth_service.dart';
 import 'package:allycall/utils/formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
@@ -25,9 +27,21 @@ class VideoDetailPage extends StatefulWidget {
 
 class _VideoDetailPageState extends State<VideoDetailPage>
     with SingleTickerProviderStateMixin {
+  Map<String, dynamic>? _video;
+
   @override
   void initState() {
     super.initState();
+    _video = widget.video;
+    _fetchVideo();
+  }
+
+  Future<void> _fetchVideo() async {
+    final id = widget.video['id'];
+    final data = await api.get('videos/$id');
+    setState(() {
+      _video = data;
+    });
   }
 
   @override
@@ -37,12 +51,44 @@ class _VideoDetailPageState extends State<VideoDetailPage>
       body: SafeArea(
         child: CustomScrollView(
           slivers: <Widget>[
-            SliverAppBar(forceMaterialTransparency: true),
-            _buildVideo(widget.video),
-            _buildMainContent(widget.video),
+            _buildAppBar(context, _video!),
+            _buildVideo(_video!),
+            _buildMainContent(_video!),
           ],
         ),
       ),
+    );
+  }
+
+  SliverAppBar _buildAppBar(BuildContext context, video) {
+    final isOwner = widget.video['users']['id'] == AuthService().getUserId();
+
+    return SliverAppBar(
+      pinned: true,
+      forceMaterialTransparency: true,
+      floating: false,
+      actions:
+          isOwner
+              ? [
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.black),
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => VideoEditPage(video: video),
+                      ),
+                    );
+
+                    if (result == true) {
+                      setState(() {
+                        _fetchVideo();
+                      });
+                    }
+                  },
+                ),
+              ]
+              : null,
     );
   }
 

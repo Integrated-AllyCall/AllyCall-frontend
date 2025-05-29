@@ -32,11 +32,11 @@ class _AuthPageState extends State<AuthPage> {
         borderRadius: BorderRadius.circular(8),
       ),
       focusedBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Color(0xFFFAA6A8), width: 2),
+        borderSide: const BorderSide(color: Color(0xFF7C55D4), width: 2),
         borderRadius: BorderRadius.circular(8),
       ),
       labelStyle: const TextStyle(color: Colors.grey),
-      floatingLabelStyle: const TextStyle(color: Color(0xFFFAA6A8)),
+      floatingLabelStyle: const TextStyle(color: Color(0xFF7C55D4)),
     );
   }
 
