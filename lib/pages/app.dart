@@ -43,7 +43,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                     onPressed: () => Navigator.pop(context),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
-                      backgroundColor: Color(0xFFFAA6A8),
+                      backgroundColor: Color(0xFF6F55D3),
                     ),
                     child: const Text('Continue'),
                   ),
