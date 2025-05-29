@@ -1,12 +1,6 @@
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:allycall/services/api_service.dart';
-import 'package:allycall/services/auth_service.dart';
 import 'package:allycall/utils/formatter.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:video_player/video_player.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
 
 final api = ApiService();
 
@@ -36,11 +30,25 @@ class _VideoEditPageState extends State<VideoEditPage> {
   }
 
   Future<void> _updateVideo() async {
-    await api.put('videos', {
-      "tag": _selectedCategory,
-      "title": _titleController,
-      "description": _descController,
-    });
+    if (!_formKey.currentState!.validate()) return;
+
+    try {
+      await api.put('videos/${widget.video['id']}', {
+        "tag": _selectedCategory,
+        "title": _titleController.text,
+        "description": _descController.text,
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Video updated successfully")),
+      );
+      Navigator.pop(context, true);
+    } catch (e) {
+      debugPrint("Error updating video: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Failed to update video")));
+    }
   }
 
   Future<void> _fetchVideoTags() async {
@@ -66,7 +74,12 @@ class _VideoEditPageState extends State<VideoEditPage> {
         child: AppBar(
           backgroundColor: const Color(0xFF6F55D3),
           elevation: 0,
-          leading: const BackButton(color: Colors.white),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              Navigator.pop(context, true);
+            },
+          ),
           centerTitle: true,
           title: const Text(
             'Video Details',
@@ -87,27 +100,42 @@ class _VideoEditPageState extends State<VideoEditPage> {
           key: _formKey,
           child: Column(
             children: [
-              Center(
-                child:
-                    thumbnail != null && thumbnail.isNotEmpty
-                        ? Image.network(
-                          thumbnail,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: double.infinity,
-                          errorBuilder:
-                              (context, error, stackTrace) =>
-                                  const Center(child: Icon(Icons.broken_image)),
-                          loadingBuilder:
-                              (context, child, loadingProgress) =>
-                                  loadingProgress == null
-                                      ? child
-                                      : const Center(
-                                        child: CircularProgressIndicator(),
-                                      ),
-                        )
-                        : const Center(child: Icon(Icons.image_not_supported)),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(170, 0, 170, 16),
+                child: AspectRatio(
+                  aspectRatio: 9 / 16,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      child:
+                          thumbnail != null && thumbnail.isNotEmpty
+                              ? Image.network(
+                                thumbnail,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                height: double.infinity,
+                                errorBuilder:
+                                    (context, error, stackTrace) =>
+                                        const Center(
+                                          child: Icon(Icons.broken_image),
+                                        ),
+                                loadingBuilder:
+                                    (context, child, loadingProgress) =>
+                                        loadingProgress == null
+                                            ? child
+                                            : const Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            ),
+                              )
+                              : const Center(
+                                child: Icon(Icons.image_not_supported),
+                              ),
+                    ),
+                  ),
+                ),
               ),
+
               const SizedBox(height: 24),
               Container(
                 padding: const EdgeInsets.all(20),

@@ -27,9 +27,21 @@ class VideoDetailPage extends StatefulWidget {
 
 class _VideoDetailPageState extends State<VideoDetailPage>
     with SingleTickerProviderStateMixin {
+  Map<String, dynamic>? _video;
+
   @override
   void initState() {
     super.initState();
+    _video = widget.video;
+    _fetchVideo();
+  }
+
+  Future<void> _fetchVideo() async {
+    final id = widget.video['id'];
+    final data = await api.get('videos/$id');
+    setState(() {
+      _video = data;
+    });
   }
 
   @override
@@ -39,9 +51,9 @@ class _VideoDetailPageState extends State<VideoDetailPage>
       body: SafeArea(
         child: CustomScrollView(
           slivers: <Widget>[
-            _buildAppBar(context, widget.video),
-            _buildVideo(widget.video),
-            _buildMainContent(widget.video),
+            _buildAppBar(context, _video!),
+            _buildVideo(_video!),
+            _buildMainContent(_video!),
           ],
         ),
       ),
@@ -49,33 +61,36 @@ class _VideoDetailPageState extends State<VideoDetailPage>
   }
 
   SliverAppBar _buildAppBar(BuildContext context, video) {
-  final isOwner = widget.video['users']['id'] == AuthService().getUserId();
+    final isOwner = widget.video['users']['id'] == AuthService().getUserId();
 
-  return SliverAppBar(
-    pinned: true,
-    forceMaterialTransparency: true,
-    floating: false,
-    actions: isOwner
-        ? [
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.black),
-              onPressed: () {
-                Navigator.push(
+    return SliverAppBar(
+      pinned: true,
+      forceMaterialTransparency: true,
+      floating: false,
+      actions:
+          isOwner
+              ? [
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.black),
+                  onPressed: () async {
+                    final result = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => VideoEditPage(video: video),
                       ),
                     );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Edit button clicked')),
-                );
-              },
-            ),
-          ]
-        : null,
-  );
-}
 
+                    if (result == true) {
+                      setState(() {
+                        _fetchVideo();
+                      });
+                    }
+                  },
+                ),
+              ]
+              : null,
+    );
+  }
 
   SliverToBoxAdapter _buildVideo(video) {
     final thumbnail = video['thumbnail_url'] as String?;

@@ -102,7 +102,7 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('Upload successful')));
-          Navigator.pop(context);
+          Navigator.pop(context, true);
         }
       } else {
         debugPrint("Upload failed with status: ${response.statusCode}");
