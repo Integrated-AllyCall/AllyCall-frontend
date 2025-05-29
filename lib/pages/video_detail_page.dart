@@ -1,5 +1,7 @@
+import 'package:allycall/pages/video_edit_page.dart';
 import 'package:allycall/pages/video_player_page.dart';
 import 'package:allycall/services/api_service.dart';
+import 'package:allycall/services/auth_service.dart';
 import 'package:allycall/utils/formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
@@ -37,7 +39,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
       body: SafeArea(
         child: CustomScrollView(
           slivers: <Widget>[
-            SliverAppBar(forceMaterialTransparency: true),
+            _buildAppBar(context, widget.video),
             _buildVideo(widget.video),
             _buildMainContent(widget.video),
           ],
@@ -45,6 +47,35 @@ class _VideoDetailPageState extends State<VideoDetailPage>
       ),
     );
   }
+
+  SliverAppBar _buildAppBar(BuildContext context, video) {
+  final isOwner = widget.video['users']['id'] == AuthService().getUserId();
+
+  return SliverAppBar(
+    pinned: true,
+    forceMaterialTransparency: true,
+    floating: false,
+    actions: isOwner
+        ? [
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.black),
+              onPressed: () {
+                Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => VideoEditPage(video: video),
+                      ),
+                    );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Edit button clicked')),
+                );
+              },
+            ),
+          ]
+        : null,
+  );
+}
+
 
   SliverToBoxAdapter _buildVideo(video) {
     final thumbnail = video['thumbnail_url'] as String?;

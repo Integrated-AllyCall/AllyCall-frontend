@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:allycall/pages/video_setting_page.dart';
+import 'package:allycall/pages/video_create_page.dart';
 import 'package:allycall/services/api_service.dart';
 import 'package:allycall/widgets/thumbnail_grid.dart';
 import 'package:file_picker/file_picker.dart';
@@ -156,7 +156,7 @@ class _FakeCallPageState extends State<FakeCallPage>
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => VideoSettingPage(file: file),
+          builder: (_) => VideoCreatePage(file: file),
         ),
       );
     } else {
