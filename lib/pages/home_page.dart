@@ -159,11 +159,8 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            SizedBox(
-              height: 320,
-              child: ThumbnailGrid(videos: videos, crossAxisCount: 3),
-            ),
-            const SizedBox(height: 24),
+            ThumbnailGrid(videos: videos, crossAxisCount: 3),
+            const SizedBox(height: 10),
             _buildSectionHeader(
               icon: AntDesign.alert_filled,
               title: 'Nearby Reports',
@@ -187,37 +184,47 @@ class _HomePageState extends State<HomePage> {
     String? subtitle,
     Widget? trailing,
   }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child:
-              icon is IconData
-                  ? Icon(icon, color: const Color(0xFF6F55D3), size: 18)
-                  : Iconify(icon, color: const Color(0xFF6F55D3), size: 18),
-        ),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-              if (subtitle != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF8A8A8A),
-                    ),
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child:
+                    icon is IconData
+                        ? Icon(icon, color: const Color(0xFF6F55D3), size: 18)
+                        : Iconify(
+                          icon,
+                          color: const Color(0xFF6F55D3),
+                          size: 18,
+                        ),
+              ),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
                   ),
                 ),
+              ),
+              if (trailing != null) trailing,
             ],
           ),
-        ),
-        if (trailing != null) trailing,
-      ],
+          if (subtitle != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 26.0, top: 2),
+              child: Text(
+                subtitle,
+                style: const TextStyle(fontSize: 12, color: Color(0xFF8A8A8A)),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

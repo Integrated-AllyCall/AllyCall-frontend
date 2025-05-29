@@ -1,5 +1,9 @@
+import 'dart:io';
+
+import 'package:allycall/pages/video_setting_page.dart';
 import 'package:allycall/services/api_service.dart';
 import 'package:allycall/widgets/thumbnail_grid.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 
@@ -36,7 +40,10 @@ class _FakeCallPageState extends State<FakeCallPage>
       _tabController = TabController(length: newTags.length, vsync: this);
       _tabController!.addListener(() {
         if (_tabController!.indexIsChanging) return;
-        selectedTag = newTags[_tabController!.index]=='All'? null : newTags[_tabController!.index];
+        selectedTag =
+            newTags[_tabController!.index] == 'All'
+                ? null
+                : newTags[_tabController!.index];
         _handleSearch();
       });
 
@@ -118,8 +125,7 @@ class _FakeCallPageState extends State<FakeCallPage>
                     height: 40,
                     width: 360,
                     child: TextField(
-                      onSubmitted: (value) =>
-                          _handleSearch(search: value),
+                      onSubmitted: (value) => _handleSearch(search: value),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.white,
@@ -128,8 +134,7 @@ class _FakeCallPageState extends State<FakeCallPage>
                           borderSide: BorderSide.none,
                         ),
                         hintText: "Find a call scenario...",
-                        hintStyle:
-                            const TextStyle(color: Color(0xFF8A8A8A)),
+                        hintStyle: const TextStyle(color: Color(0xFF8A8A8A)),
                         prefixIcon: const Icon(Icons.search),
                         prefixIconColor: const Color(0xFF8A8A8A),
                       ),
@@ -138,7 +143,31 @@ class _FakeCallPageState extends State<FakeCallPage>
                 ),
                 const SizedBox(width: 8),
                 TextButton.icon(
-                  onPressed: () => print("Add Report clicked"),
+                  onPressed: () async {
+  try {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.video,
+    );
+    if (result != null && result.files.single.path != null) {
+      final file = File(result.files.single.path!);
+      print('Picked file: ${file.path}');
+
+      // Navigate to EditPostPage
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => VideoSettingPage(file: file),
+        ),
+      );
+    } else {
+      print('No file selected');
+    }
+  } catch (e) {
+    print('Error picking file: $e');
+  }
+},
+
+
                   icon: Iconify(svgVideo, size: 14, color: Colors.white),
                   label: const Text(
                     'Upload',
@@ -163,19 +192,15 @@ class _FakeCallPageState extends State<FakeCallPage>
         ],
       ),
       bottom: TabBar(
-            controller: _tabController,
-            labelPadding: const EdgeInsets.symmetric(horizontal: 12),
-            isScrollable: true,
-            indicatorColor: const Color(0xFF6E56C9),
-            labelColor: Colors.black,
-            unselectedLabelColor: const Color(0xFF8A8A8A),
-            labelStyle: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-            tabs: _tags.map((label) => Tab(text: label)).toList(),
-          ),
+        controller: _tabController,
+        labelPadding: const EdgeInsets.symmetric(horizontal: 12),
+        isScrollable: true,
+        indicatorColor: const Color(0xFF6E56C9),
+        labelColor: Colors.black,
+        unselectedLabelColor: const Color(0xFF8A8A8A),
+        labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        tabs: _tags.map((label) => Tab(text: label)).toList(),
+      ),
     );
   }
 }
-

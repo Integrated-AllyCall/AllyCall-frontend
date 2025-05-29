@@ -25,7 +25,7 @@ class ThumbnailGrid extends StatelessWidget {
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 9 / 19,
+        childAspectRatio: crossAxisCount == 2 ? 9 / 19 : 9 / 20,
       ),
       itemBuilder: (context, index) {
         final video = videos[index];
@@ -41,7 +41,7 @@ class ThumbnailGrid extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => VideoDetailPage(video: video,),
+                    builder: (context) => VideoDetailPage(video: video),
                   ),
                 );
               },

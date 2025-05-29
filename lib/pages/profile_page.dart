@@ -4,7 +4,6 @@ import 'package:allycall/widgets/thumbnail_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:iconify_flutter/icons/gg.dart';
-import 'package:iconify_flutter/icons/uil.dart';
 
 final api = ApiService();
 
@@ -66,17 +65,19 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   SliverAppBar _buildAppBar(BuildContext context) {
-    return SliverAppBar(
-      backgroundColor: Colors.transparent,
-      floating: false,
-      forceMaterialTransparency: true,
-      automaticallyImplyLeading: false,
-      titleSpacing: 0,
-      toolbarHeight: 300,
-      title: Column(
+  return SliverAppBar(
+    backgroundColor: Color(0xFFF7F6FC),
+    expandedHeight: 320,
+    pinned: true,
+    floating: false,
+    toolbarHeight: 0,
+    automaticallyImplyLeading: false,
+    flexibleSpace: FlexibleSpaceBar(
+      background: Column(
         children: [
           Container(
-            alignment: AlignmentDirectional.topCenter,
+            width: double.infinity,
+            height: 60,
             decoration: const BoxDecoration(
               color: Color(0xFF6F55D3),
               borderRadius: BorderRadius.only(
@@ -84,62 +85,46 @@ class _ProfilePageState extends State<ProfilePage>
                 bottomRight: Radius.circular(30),
               ),
             ),
-            height: 60,
-            width: double.infinity,
-            padding: const EdgeInsets.all(10),
-            child: Padding(
-              padding: EdgeInsets.only(top: 5),
-              child: const Text(
-                'Your Profile',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                ),
+            alignment: Alignment.center,
+            child: const Text(
+              'Your Profile',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
               ),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           _profileImage ??
-              Iconify(Gg.profile, size: 80, color: Color(0xFF8A8A8A)),
-          Text(AuthService().getUserName(), style: TextStyle(fontSize: 16)),
+              const Iconify(Gg.profile, size: 80, color: Color(0xFF8A8A8A)),
+          Text(AuthService().getUserName(), style: const TextStyle(fontSize: 16)),
           Text(
             AuthService().getUserEmail(),
-            style: TextStyle(color: Color(0xFF8A8A8A)),
+            style: const TextStyle(color: Color(0xFF8A8A8A)),
           ),
-          SizedBox(height: 15),
+          const SizedBox(height: 15),
           FloatingActionButton.extended(
             onPressed: () {
-              // TODO: handle profile setting
-              print("Profile Setting Click");
+              AuthService().signOut;
             },
-            icon: const Iconify(Uil.setting, color: Colors.white),
-            label: const Text(
-              'Profile Setting',
-              style: TextStyle(color: Colors.white),
-            ),
+            icon: const Icon(Icons.logout, color: Colors.white),
+            label: const Text('Sign Out', style: TextStyle(color: Colors.white)),
             backgroundColor: const Color(0xFFA587E7),
-          ),
-          TextButton.icon(
-            onPressed: AuthService().signOut,
-            icon: const Icon(Icons.logout),
-            label: const Text('Sign Out'),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            ),
           ),
         ],
       ),
-      bottom: TabBar(
-        controller: _tabController,
-        labelPadding: const EdgeInsets.symmetric(horizontal: 12),
-        indicatorColor: const Color(0xFF6E56C9),
-        labelColor: Colors.black,
-        unselectedLabelColor: const Color(0xFF8A8A8A),
-        labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        tabs: const <Widget>[Tab(text: 'Video'), Tab(text: 'Report')],
-      ),
-    );
-  }
+    ),
+    bottom: TabBar(
+      controller: _tabController,
+      labelPadding: const EdgeInsets.symmetric(horizontal: 12),
+      indicatorColor: const Color(0xFF6E56C9),
+      labelColor: Colors.black,
+      unselectedLabelColor: const Color(0xFF8A8A8A),
+      labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+      tabs: const <Widget>[Tab(text: 'Video'), Tab(text: 'Report')],
+    ),
+  );
+}
+
 }

@@ -37,7 +37,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
       body: SafeArea(
         child: CustomScrollView(
           slivers: <Widget>[
-            SliverAppBar(),
+            SliverAppBar(forceMaterialTransparency: true),
             _buildVideo(widget.video),
             _buildMainContent(widget.video),
           ],
@@ -56,7 +56,6 @@ class _VideoDetailPageState extends State<VideoDetailPage>
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Container(
-              // color: Colors.white,
               child:
                   thumbnail != null && thumbnail.isNotEmpty
                       ? Image.network(
@@ -108,19 +107,19 @@ class _VideoDetailPageState extends State<VideoDetailPage>
               height: 50,
               child: FloatingActionButton.extended(
                 onPressed: () {
-                 final videoUrl = widget.video['video_url'] as String?;
-  if (videoUrl != null && videoUrl.isNotEmpty) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => VideoPlayerPage(videoUrl: videoUrl),
-      ),
-    );
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('No video available.')),
-    );
-  }
+                  final videoUrl = widget.video['video_url'] as String?;
+                  if (videoUrl != null && videoUrl.isNotEmpty) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => VideoPlayerPage(videoUrl: videoUrl),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('No video available.')),
+                    );
+                  }
                 },
                 icon: const Iconify(Heroicons.play_solid, color: Colors.white),
                 label: const Text(
