@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: Colors.white,
       ),
-      home: const AuthGate()
+      home: const AuthGate(),
     );
   }
 }

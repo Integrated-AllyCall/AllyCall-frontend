@@ -1,6 +1,5 @@
 import 'package:allycall/services/api_service.dart';
 import 'package:allycall/services/auth_service.dart';
-import 'package:allycall/services/location_service.dart';
 import 'package:allycall/widgets/thumbnail_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
@@ -8,6 +7,7 @@ import 'package:iconify_flutter/icons/ant_design.dart';
 import 'package:iconify_flutter/icons/gg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:allycall/services/location_service.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:allycall/widgets/legal_card.dart';
 import 'package:allycall/pages/legal_detail_page.dart';
 
@@ -46,7 +46,7 @@ class _HomePageState extends State<HomePage> {
   List<dynamic> _legalList = [];
   bool _isLoadingLocation = true;
   String? _countryName;
-  
+  List<Map<String, dynamic>> nearbyReports = [];
 
   @override
   void initState() {
@@ -54,30 +54,60 @@ class _HomePageState extends State<HomePage> {
     fetchVideo();
     loadProfileImage();
     _fetchCountryFromCoordinates();
+    _fetchNearbyReports();
   }
 
   Future<void> _fetchCountryFromCoordinates() async {
-  try {
-    final position = await getCurrentLocation();
-    final lat = position.latitude;
-    final lng = position.longitude;
+    try {
+      final position = await getCurrentLocation();
+      final lat = position.latitude;
+      final lng = position.longitude;
 
-    final response = await ApiService().get('legals/here?lat=$lat&lng=$lng');
+      final response = await ApiService().get('legals/here?lat=$lat&lng=$lng');
 
-    setState(() {
-      _countryName = response['name'] ?? 'Unknown country';
-      _legalList = response['legal'] ?? [];
-      _isLoadingLocation = false;
-    });
-  } catch (e) {
-    print('Error fetching country: $e');
-    setState(() {
-      _countryName = 'Location unavailable';
-      _legalList = [];
-      _isLoadingLocation = false;
-    });
+      setState(() {
+        _countryName = response['name'] ?? 'Unknown country';
+        _legalList = response['legal'] ?? [];
+        _isLoadingLocation = false;
+      });
+    } catch (e) {
+      print('Error fetching country: $e');
+      setState(() {
+        _countryName = 'Location unavailable';
+        _legalList = [];
+        _isLoadingLocation = false;
+      });
+    }
   }
-}
+
+  Future<void> _fetchNearbyReports() async {
+    try {
+      final position = await getCurrentLocation();
+      final lat = position.latitude;
+      final lng = position.longitude;
+      final response = await api.get('reports/nearby?lat=$lat&lng=$lng');
+      print(lat);
+      print(response);
+      if (response.isEmpty) {
+        setState(() {
+          nearbyReports = [];
+        });
+        return;
+      }
+      // Sort and limit to 5 most recent
+      response.sort(
+        (a, b) => DateTime.parse(
+          b['created_at'],
+        ).compareTo(DateTime.parse(a['created_at'])),
+      );
+
+      setState(() {
+        nearbyReports = List<Map<String, dynamic>>.from(response.take(5));
+      });
+    } catch (e) {
+      print("Failed to fetch reports: $e");
+    }
+  }
 
   Future<void> fetchVideo() async {
     final response = await api.get('videos?num=3');
@@ -198,7 +228,9 @@ class _HomePageState extends State<HomePage> {
               icon: AntDesign.alert_filled,
               title: 'Nearby Reports',
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+            ...nearbyReports.map(_buildReportCard).toList(),
+            const SizedBox(height: 24),
             _buildSectionHeader(
               icon: svgBulb,
               title: 'Your Legal Safety Guide',
@@ -228,10 +260,11 @@ class _HomePageState extends State<HomePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => LegalDetailPage(
-                          data: item,
-                          countryName: _countryName ?? '',
-                        ),
+                        builder:
+                            (_) => LegalDetailPage(
+                              data: item,
+                              countryName: _countryName ?? '',
+                            ),
                       ),
                     );
                   },
@@ -253,43 +286,250 @@ class _HomePageState extends State<HomePage> {
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child:
-                    icon is IconData
-                        ? Icon(icon, color: const Color(0xFF6F55D3), size: 18)
-                        : Iconify(
-                          icon,
-                          color: const Color(0xFF6F55D3),
-                          size: 18,
+          // Icon on the left
+          Padding(
+            padding: const EdgeInsets.only(right: 12.0),
+            child:
+                icon is IconData
+                    ? Icon(icon, color: const Color(0xFF6F55D3), size: 20)
+                    : Iconify(icon, color: const Color(0xFF6F55D3), size: 20),
+          ),
+
+          // Text (title + subtitle) and trailing on the right
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
                         ),
-              ),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
+                      ),
+                    ),
+                    if (trailing != null) trailing,
+                  ],
+                ),
+                if (subtitle != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF8A8A8A),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReportCard(Map<String, dynamic> report) {
+    final createdDate = DateTime.parse(report['created_at']);
+    final formattedDate =
+        '${createdDate.year}-${createdDate.month.toString().padLeft(2, '0')}-${createdDate.day.toString().padLeft(2, '0')}';
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => ReportDetailPage(report: report)),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Icon
+            Center(
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1EDFE),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Center(
+                  child: Iconify(
+                    AntDesign.alert_filled,
+                    color: Color(0xFF6F55D3),
+                    size: 20,
                   ),
                 ),
               ),
-              if (trailing != null) trailing,
-            ],
-          ),
-          if (subtitle != null)
-            Padding(
-              padding: const EdgeInsets.only(left: 26.0, top: 2),
-              child: Text(
-                subtitle,
-                style: const TextStyle(fontSize: 12, color: Color(0xFF8A8A8A)),
+            ),
+            const SizedBox(width: 12),
+            // Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          report['tag'] ?? '',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF6F55D3),
+                          ),
+                        ),
+                      ),
+                      Text(
+                        formattedDate,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black45,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    report['title'] ?? '',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_pin,
+                        size: 14,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          report['short_address'] ?? '',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.black54,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ReportDetailPage extends StatelessWidget {
+  final Map<String, dynamic> report;
+
+  const ReportDetailPage({super.key, required this.report});
+
+  @override
+  Widget build(BuildContext context) {
+    final LatLng position = LatLng(report['latitude'], report['longitude']);
+
+    return Scaffold(
+      appBar: AppBar(title: Text(report['title'] ?? 'Report Detail')),
+      body: Column(
+        children: [
+          SizedBox(
+            height: 250,
+            width: double.infinity,
+            child: GoogleMap(
+              initialCameraPosition: CameraPosition(target: position, zoom: 16),
+              markers: {
+                Marker(
+                  markerId: const MarkerId('report_location'),
+                  position: position,
+                  infoWindow: InfoWindow(title: report['tag']),
+                ),
+              },
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      report['tag'] ?? '',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF6F55D3),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      report['title'] ?? '',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_pin,
+                          size: 16,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            report['long_address'] ?? '',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      report['description'] ?? 'No description provided.',
+                      style: const TextStyle(fontSize: 15),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
