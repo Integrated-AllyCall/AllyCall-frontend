@@ -61,12 +61,18 @@ class _VideoDetailPageState extends State<VideoDetailPage>
   }
 
   SliverAppBar _buildAppBar(BuildContext context, video) {
-    final isOwner = widget.video['users']['id'] == AuthService().getUserId();
+    final isOwner = video['users']['id'] == AuthService().getUserId();
 
     return SliverAppBar(
       pinned: true,
       forceMaterialTransparency: true,
       floating: false,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.black),
+        onPressed: () {
+          Navigator.pop(context, true);
+        },
+      ),
       actions:
           isOwner
               ? [
@@ -81,9 +87,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
                     );
 
                     if (result == true) {
-                      setState(() {
-                        _fetchVideo();
-                      });
+                      await _fetchVideo();
                     }
                   },
                 ),
@@ -153,7 +157,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
               height: 50,
               child: FloatingActionButton.extended(
                 onPressed: () {
-                  final videoUrl = widget.video['video_url'] as String?;
+                  final videoUrl = video['video_url'] as String?;
                   if (videoUrl != null && videoUrl.isNotEmpty) {
                     Navigator.push(
                       context,

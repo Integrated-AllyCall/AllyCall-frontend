@@ -7,11 +7,13 @@ import 'package:iconify_flutter/icons/gg.dart';
 class ThumbnailGrid extends StatelessWidget {
   final List<Map<String, dynamic>> videos;
   final int crossAxisCount;
+  final Future<void> Function()? onRefresh;
 
   const ThumbnailGrid({
     super.key,
     required this.videos,
     required this.crossAxisCount,
+    this.onRefresh,
   });
 
   @override
@@ -37,13 +39,17 @@ class ThumbnailGrid extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             GestureDetector(
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => VideoDetailPage(video: video),
                   ),
                 );
+                if(result == true && onRefresh != null){
+                  print("onRefresh triggered");
+                  await onRefresh!();
+                }
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),

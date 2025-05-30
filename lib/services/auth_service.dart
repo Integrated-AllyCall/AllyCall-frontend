@@ -3,8 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:allycall/state/global_flags.dart';
-import 'package:http/http.dart' as http;
-import 'package:cached_network_image/cached_network_image.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -12,34 +10,44 @@ class AuthService {
   final api = ApiService();
 
   Future<Widget?> getProfileImage({double size = 100}) async {
-    final user = await api.get('users/${_auth.currentUser?.uid}');
-    final imageUrl = user['image_url'];
-    if (imageUrl == null || imageUrl.isEmpty) {
-      return null;
-    }
-
     try {
-      final response = await http.head(Uri.parse(imageUrl));
-      if (response.statusCode >= 200 && response.statusCode < 300) {
+      final response = await api.getImage(
+        'users/${_auth.currentUser?.uid}/image',
+      );
+
+      if (response.statusCode == 200) {
+        final bytes = response.bodyBytes;
+
         return ClipOval(
-          child: CachedNetworkImage(
-            imageUrl: imageUrl,
+          child: Image.memory(
+            bytes,
             height: size,
             width: size,
             fit: BoxFit.cover,
-            placeholder:
-                (context, url) => const Center(
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
+            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+              if (wasSynchronouslyLoaded) return child;
+              return AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child:
+                    frame != null
+                        ? child
+                        : SizedBox(
+                          height: size,
+                          width: size,
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+              );
+            },
           ),
         );
-      } else {
-        return null;
       }
     } catch (e) {
-      print('Image check failed: $e');
-      return null;
+      debugPrint('Failed to load profile image: $e');
     }
+
+    return null;
   }
 
   getUserId() {

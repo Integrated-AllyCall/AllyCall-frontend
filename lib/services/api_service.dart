@@ -80,4 +80,25 @@ class ApiService {
       endpoint,
     );
   }
+
+  // GET Image Binary
+  Future<http.Response> getImage(String endpoint) async {
+    try {
+      final token = await _getAuthToken();
+
+      final headers = {if (token != null) 'Authorization': 'Bearer $token'};
+
+      final url = Uri.parse('$baseUrl$endpoint');
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return response;
+      } else {
+        throw Exception('Failed to load image. Status: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Image fetch error on $endpoint: $error');
+      rethrow;
+    }
+  }
 }

@@ -26,6 +26,7 @@ class FakeCallPage extends StatefulWidget {
 
 class _FakeCallPageState extends State<FakeCallPage>
     with SingleTickerProviderStateMixin {
+  final TextEditingController _searchController = TextEditingController();
   List<String> _tags = [];
   List<Map<String, dynamic>> videos = [];
   TabController? _tabController;
@@ -63,9 +64,17 @@ class _FakeCallPageState extends State<FakeCallPage>
     _initData();
   }
 
-  Future<void> _handleSearch({String? search}) async {
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _tabController?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleSearch() async {
+    final search = _searchController.text;
     String query = '';
-    if (search != null && search.isNotEmpty) {
+    if (search.isNotEmpty) {
       query += 'search=$search';
     }
     if (selectedTag != null && selectedTag!.isNotEmpty) {
@@ -97,7 +106,11 @@ class _FakeCallPageState extends State<FakeCallPage>
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               sliver: SliverToBoxAdapter(
-                child: ThumbnailGrid(videos: videos, crossAxisCount: 2),
+                child: ThumbnailGrid(
+                  videos: videos,
+                  crossAxisCount: 2,
+                  onRefresh: _handleSearch,
+                ),
               ),
             ),
           ],
@@ -125,7 +138,8 @@ class _FakeCallPageState extends State<FakeCallPage>
                     height: 40,
                     width: 360,
                     child: TextField(
-                      onSubmitted: (value) => _handleSearch(search: value),
+                      controller: _searchController,
+                      onSubmitted: (value) => _handleSearch(),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.white,
@@ -144,29 +158,28 @@ class _FakeCallPageState extends State<FakeCallPage>
                 const SizedBox(width: 8),
                 TextButton.icon(
                   onPressed: () async {
-  try {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.video,
-    );
-    if (result != null && result.files.single.path != null) {
-      final file = File(result.files.single.path!);
-      print('Picked file: ${file.path}');
+                    try {
+                      final result = await FilePicker.platform.pickFiles(
+                        type: FileType.video,
+                      );
+                      if (result != null && result.files.single.path != null) {
+                        final file = File(result.files.single.path!);
+                        print('Picked file: ${file.path}');
 
-      // Navigate to EditPostPage
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => VideoCreatePage(file: file),
-        ),
-      );
-    } else {
-      print('No file selected');
-    }
-  } catch (e) {
-    print('Error picking file: $e');
-  }
-},
-
+                        // Navigate to EditPostPage
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => VideoCreatePage(file: file),
+                          ),
+                        );
+                      } else {
+                        print('No file selected');
+                      }
+                    } catch (e) {
+                      print('Error picking file: $e');
+                    }
+                  },
 
                   icon: Iconify(svgVideo, size: 14, color: Colors.white),
                   label: const Text(

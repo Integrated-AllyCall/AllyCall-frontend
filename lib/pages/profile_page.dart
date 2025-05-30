@@ -27,7 +27,7 @@ class _ProfilePageState extends State<ProfilePage>
     });
   }
 
-  Future<void> fetchVideo() async {
+  Future<void> _fetchVideo() async {
     final response = await api.get('videos/user/${AuthService().getUserId()}');
     setState(() {
       videos = List<Map<String, dynamic>>.from(response);
@@ -39,7 +39,7 @@ class _ProfilePageState extends State<ProfilePage>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     loadProfileImage();
-    fetchVideo();
+    _fetchVideo();
   }
 
   @override
@@ -54,7 +54,7 @@ class _ProfilePageState extends State<ProfilePage>
             children: [
               SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
-                child: ThumbnailGrid(videos: videos, crossAxisCount: 3),
+                child: ThumbnailGrid(videos: videos, crossAxisCount: 3, onRefresh: _fetchVideo),
               ),
               const Center(child: Text('Report History')),
             ],
