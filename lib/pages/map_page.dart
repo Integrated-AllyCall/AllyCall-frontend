@@ -31,7 +31,8 @@ class _MapPageState extends State<MapPage> {
 
   Future<void> _fetchNearbyReport(double lat, double lng) async {
     try {
-      final data = await api.get('reports/nearby?lat=$lat&lng=$lng');
+      final response = await api.get('reports/nearby?lat=$lat&lng=$lng');
+      final List<dynamic> data = response['reports'] ?? [];
 
       final markerIcon = await BitmapDescriptor.asset(
         const ImageConfiguration(size: Size(48, 48)),
@@ -190,9 +191,14 @@ class _MapPageState extends State<MapPage> {
                       ..clear()
                       ..add(
                         Marker(
-                          markerId: const MarkerId('new_report'),
+                          markerId: const MarkerId(
+                            'current_location',
+                          ), // important!
                           position: reportLocation,
                           infoWindow: const InfoWindow(title: 'Your Report'),
+                          icon: BitmapDescriptor.defaultMarkerWithHue(
+                            BitmapDescriptor.hueAzure,
+                          ),
                         ),
                       );
                   });
@@ -383,7 +389,7 @@ class _AddReportSheetState extends State<AddReportSheet> {
   }
 
   Future<void> _submitReport() async {
-    final userId = AuthService().getUserId();
+    final userId = await AuthService().getUserId();
     print('User ID: $userId');
     if (userId == null ||
         _titleController.text.isEmpty ||
