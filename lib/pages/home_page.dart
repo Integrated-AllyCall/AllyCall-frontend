@@ -8,6 +8,8 @@ import 'package:iconify_flutter/icons/ant_design.dart';
 import 'package:iconify_flutter/icons/gg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:allycall/services/location_service.dart';
+import 'package:allycall/widgets/legal_card.dart';
+import 'package:allycall/pages/legal_detail_page.dart';
 
 final api = ApiService();
 
@@ -41,8 +43,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   Widget? _profileImage;
   List<Map<String, dynamic>> videos = [];
+  List<dynamic> _legalList = [];
   bool _isLoadingLocation = true;
   String? _countryName;
+  
 
   @override
   void initState() {
@@ -53,24 +57,27 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _fetchCountryFromCoordinates() async {
-    try {
-      final position = await getCurrentLocation(); // from location_service.dart
-      final lat = position.latitude;
-      final lng = position.longitude;
+  try {
+    final position = await getCurrentLocation();
+    final lat = position.latitude;
+    final lng = position.longitude;
 
-      final response = await ApiService().get('legals/here?lat=$lat&lng=$lng');
-      setState(() {
-        _countryName = response['name'] ?? 'Unknown country';
-        _isLoadingLocation = false;
-      });
-    } catch (e) {
-      print('Error fetching country: $e');
-      setState(() {
-        _countryName = 'Location unavailable';
-        _isLoadingLocation = false;
-      });
-    }
+    final response = await ApiService().get('legals/here?lat=$lat&lng=$lng');
+
+    setState(() {
+      _countryName = response['name'] ?? 'Unknown country';
+      _legalList = response['legal'] ?? [];
+      _isLoadingLocation = false;
+    });
+  } catch (e) {
+    print('Error fetching country: $e');
+    setState(() {
+      _countryName = 'Location unavailable';
+      _legalList = [];
+      _isLoadingLocation = false;
+    });
   }
+}
 
   Future<void> fetchVideo() async {
     final response = await api.get('videos?num=3');
@@ -191,7 +198,7 @@ class _HomePageState extends State<HomePage> {
               icon: AntDesign.alert_filled,
               title: 'Nearby Reports',
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             _buildSectionHeader(
               icon: svgBulb,
               title: 'Your Legal Safety Guide',
@@ -199,6 +206,37 @@ class _HomePageState extends State<HomePage> {
                   _isLoadingLocation
                       ? 'Loading location...'
                       : _countryName ?? 'Unknown location',
+            ),
+            const SizedBox(height: 16),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _legalList.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                childAspectRatio: 0.75, // Matches GuidePage style
+              ),
+              itemBuilder: (context, index) {
+                final item = _legalList[index];
+                return LegalCard(
+                  countryName: _countryName ?? '',
+                  title: item['title'] ?? '',
+                  description: item['description'] ?? '',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => LegalDetailPage(
+                          data: item,
+                          countryName: _countryName ?? '',
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
             const SizedBox(height: 50),
           ],
