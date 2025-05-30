@@ -32,6 +32,9 @@ const svgBulb =
 </svg>
 ''';
 
+const svgGun =
+    '''<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"/><path fill="currentColor" d="M12 2a1 1 0 0 1 1 1v.055A9.004 9.004 0 0 1 20.945 11H21a1 1 0 1 1 0 2h-.055A9.004 9.004 0 0 1 13 20.945V21a1 1 0 1 1-2 0v-.055A9.004 9.004 0 0 1 3.055 13H3a1 1 0 1 1 0-2h.055A9.004 9.004 0 0 1 11 3.055V3a1 1 0 0 1 1-1m1 3.07V6a1 1 0 0 1-1.993.117L11 6v-.93a7.01 7.01 0 0 0-5.888 5.676L5.071 11H6a1 1 0 0 1 .117 1.993L6 13h-.93a7.01 7.01 0 0 0 5.676 5.888l.254.041V18a1 1 0 0 1 1.993-.117L13 18v.93a7.01 7.01 0 0 0 5.888-5.676l.041-.254H18a1 1 0 0 1-.117-1.993L18 11h.93a7.01 7.01 0 0 0-5.676-5.888zm-1 5.43a1.5 1.5 0 1 1 0 3a1.5 1.5 0 0 1 0-3"/></g></svg>''';
+
 class HomePage extends StatefulWidget {
   final TabController tabController;
   const HomePage({super.key, required this.tabController});
@@ -47,6 +50,7 @@ class _HomePageState extends State<HomePage> {
   bool _isLoadingLocation = true;
   String? _countryName;
   List<Map<String, dynamic>> nearbyReports = [];
+  String? _cityName;
 
   @override
   void initState() {
@@ -80,29 +84,38 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  final Map<String, dynamic> tagIcons = {
+    'Harassment': Icons.do_not_touch,
+    'Stalking': Icons.directions_walk,
+    'Catcalling': Icons.record_voice_over,
+    'Unsafe Area': Icons.dangerous_rounded, // fixed name
+    'Assault': svgGun, // svgGun is a String, others are IconData
+    'Suspicious Activity': Icons.visibility_outlined, // fixed name
+  };
+  final Map<String, String> displayTags = {
+    'Unsafe_Area': 'Unsafe Area',
+    'Suspicious_Activity': 'Suspicious Activity',
+  };
   Future<void> _fetchNearbyReports() async {
     try {
       final position = await getCurrentLocation();
       final lat = position.latitude;
       final lng = position.longitude;
+
       final response = await api.get('reports/nearby?lat=$lat&lng=$lng');
-      print(lat);
-      print(response);
-      if (response.isEmpty) {
-        setState(() {
-          nearbyReports = [];
-        });
-        return;
-      }
-      // Sort and limit to 5 most recent
-      response.sort(
+      final reports = response['reports'] as List<dynamic>? ?? [];
+      final city = response['city'] ?? 'Unknown Area';
+
+      // Sort and take 5 most recent
+      reports.sort(
         (a, b) => DateTime.parse(
           b['created_at'],
         ).compareTo(DateTime.parse(a['created_at'])),
       );
 
       setState(() {
-        nearbyReports = List<Map<String, dynamic>>.from(response.take(5));
+        _cityName = city;
+        nearbyReports = List<Map<String, dynamic>>.from(reports.take(5));
       });
     } catch (e) {
       print("Failed to fetch reports: $e");
@@ -227,6 +240,10 @@ class _HomePageState extends State<HomePage> {
             _buildSectionHeader(
               icon: AntDesign.alert_filled,
               title: 'Nearby Reports',
+              subtitle:
+                  _isLoadingLocation
+                      ? 'Loading location...'
+                      : _cityName ?? 'Unknown Area',
             ),
             const SizedBox(height: 12),
             ...nearbyReports.map(_buildReportCard).toList(),
@@ -341,6 +358,9 @@ class _HomePageState extends State<HomePage> {
     final formattedDate =
         '${createdDate.year}-${createdDate.month.toString().padLeft(2, '0')}-${createdDate.day.toString().padLeft(2, '0')}';
 
+    final tag = report['tag'] ?? '';
+    final icon = tagIcons[tag] ?? Icons.warning; // fallback if not found
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -366,26 +386,28 @@ class _HomePageState extends State<HomePage> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Icon
-            Center(
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1EDFE),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Center(
-                  child: Iconify(
-                    AntDesign.alert_filled,
-                    color: Color(0xFF6F55D3),
-                    size: 20,
-                  ),
-                ),
+            // Icon with background
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1EDFE),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child:
+                    icon is IconData
+                        ? Icon(icon, color: const Color(0xFF6F55D3), size: 22)
+                        : Iconify(
+                          icon,
+                          color: const Color(0xFF6F55D3),
+                          size: 22,
+                        ),
               ),
             ),
             const SizedBox(width: 12),
-            // Info
+
+            // Info column
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -394,7 +416,7 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       Expanded(
                         child: Text(
-                          report['tag'] ?? '',
+                          tag,
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -457,80 +479,116 @@ class ReportDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final LatLng position = LatLng(report['latitude'], report['longitude']);
+    final double latitude = double.parse(report['latitude'].toString());
+    final double longitude = double.parse(report['longitude'].toString());
 
     return Scaffold(
-      appBar: AppBar(title: Text(report['title'] ?? 'Report Detail')),
-      body: Column(
-        children: [
-          SizedBox(
-            height: 250,
-            width: double.infinity,
-            child: GoogleMap(
-              initialCameraPosition: CameraPosition(target: position, zoom: 16),
-              markers: {
-                Marker(
-                  markerId: const MarkerId('report_location'),
-                  position: position,
-                  infoWindow: InfoWindow(title: report['tag']),
-                ),
-              },
-            ),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF6F55D3),
+        elevation: 0,
+        leading: const BackButton(color: Colors.white),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(30),
+            bottomRight: Radius.circular(30),
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      report['tag'] ?? '',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF6F55D3),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      report['title'] ?? '',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_pin,
-                          size: 16,
-                          color: Colors.grey,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            report['long_address'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.black54,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      report['description'] ?? 'No description provided.',
-                      style: const TextStyle(fontSize: 15),
-                    ),
-                  ],
+        ),
+        title: const Text(''),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: ListView(
+          children: [
+            // Tag
+            Row(
+              children: [
+                const Icon(Icons.label, size: 16, color: Color(0xFF6E56C9)),
+                const SizedBox(width: 6),
+                Text(
+                  report['tag'] ?? '',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF6E56C9),
+                  ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            // Title
+            Text(
+              report['title'] ?? 'Untitled Report',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Report Location',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 200,
+              child: GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(latitude, longitude),
+                  zoom: 15,
+                ),
+                markers: {
+                  Marker(
+                    markerId: const MarkerId('report_location'),
+                    position: LatLng(latitude, longitude),
+                    infoWindow: InfoWindow(title: report['title'] ?? 'Report'),
+                  ),
+                },
+                zoomControlsEnabled: false,
+                myLocationEnabled: false,
+
+                rotateGesturesEnabled: false,
+                tiltGesturesEnabled: false,
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            // Date
+            Row(
+              children: [
+                const Icon(Icons.schedule, size: 16, color: Colors.grey),
+                const SizedBox(width: 6),
+                Text(
+                  report['created_at'],
+                  style: const TextStyle(fontSize: 13, color: Colors.grey),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Address
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.place, size: 16, color: Colors.grey),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    report['long_address'] ?? 'Unknown location',
+                    style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Description
+            Text(
+              report['description'] ?? 'No description provided.',
+              style: const TextStyle(fontSize: 14, height: 1.6),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Map
+          ],
+        ),
       ),
     );
   }
