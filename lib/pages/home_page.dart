@@ -31,7 +31,7 @@ const svgBulb =
 </svg>
 ''';
 
-const svgGun =
+const svgAim =
     '''<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"/><path fill="currentColor" d="M12 2a1 1 0 0 1 1 1v.055A9.004 9.004 0 0 1 20.945 11H21a1 1 0 1 1 0 2h-.055A9.004 9.004 0 0 1 13 20.945V21a1 1 0 1 1-2 0v-.055A9.004 9.004 0 0 1 3.055 13H3a1 1 0 1 1 0-2h.055A9.004 9.004 0 0 1 11 3.055V3a1 1 0 0 1 1-1m1 3.07V6a1 1 0 0 1-1.993.117L11 6v-.93a7.01 7.01 0 0 0-5.888 5.676L5.071 11H6a1 1 0 0 1 .117 1.993L6 13h-.93a7.01 7.01 0 0 0 5.676 5.888l.254.041V18a1 1 0 0 1 1.993-.117L13 18v.93a7.01 7.01 0 0 0 5.888-5.676l.041-.254H18a1 1 0 0 1-.117-1.993L18 11h.93a7.01 7.01 0 0 0-5.676-5.888zm-1 5.43a1.5 1.5 0 1 1 0 3a1.5 1.5 0 0 1 0-3"/></g></svg>''';
 
 class HomePage extends StatefulWidget {
@@ -87,9 +87,9 @@ class _HomePageState extends State<HomePage> {
     'Harassment': Icons.do_not_touch,
     'Stalking': Icons.directions_walk,
     'Catcalling': Icons.record_voice_over,
-    'Unsafe Area': Icons.dangerous_rounded, // fixed name
-    'Assault': svgGun, // svgGun is a String, others are IconData
-    'Suspicious Activity': Icons.visibility_outlined, // fixed name
+    'Unsafe Area': Icons.dangerous_rounded,
+    'Assault': svgAim,
+    'Suspicious Activity': Icons.visibility_outlined,
   };
   final Map<String, String> displayTags = {
     'Unsafe_Area': 'Unsafe Area',
@@ -243,6 +243,21 @@ class _HomePageState extends State<HomePage> {
                   _isLoadingLocation
                       ? 'Loading location...'
                       : _cityName ?? 'Unknown Area',
+              trailing: TextButton(
+                onPressed: () => widget.tabController.animateTo(1),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF8A8A8A),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Text('See more'),
+                    SizedBox(width: 6),
+                    Icon(Icons.arrow_forward_ios, size: 16),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 12),
             ...nearbyReports.map(_buildReportCard).toList(),
@@ -254,6 +269,21 @@ class _HomePageState extends State<HomePage> {
                   _isLoadingLocation
                       ? 'Loading location...'
                       : _countryName ?? 'Unknown location',
+              trailing: TextButton(
+                onPressed: () => widget.tabController.animateTo(3),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF8A8A8A),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Text('See more'),
+                    SizedBox(width: 6),
+                    Icon(Icons.arrow_forward_ios, size: 16),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             GridView.builder(
