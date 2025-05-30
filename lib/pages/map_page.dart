@@ -454,7 +454,7 @@ class _AddReportSheetState extends State<AddReportSheet> {
             Row(
               children: [
                 const Text(
-                  '📢 Report Issue',
+                  'Report Issue',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),

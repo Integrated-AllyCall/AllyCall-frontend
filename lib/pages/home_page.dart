@@ -10,6 +10,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:allycall/widgets/legal_card.dart';
 import 'package:allycall/pages/legal_detail_page.dart';
 
+
 final api = ApiService();
 
 const svgPhone = '''
