@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:iconify_flutter/icons/ant_design.dart';
 import 'package:iconify_flutter/icons/gg.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:allycall/services/location_service.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:allycall/widgets/legal_card.dart';
@@ -51,7 +50,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    fetchVideo();
+    _fetchVideo();
     loadProfileImage();
     _fetchCountryFromCoordinates();
     _fetchNearbyReports();
@@ -109,7 +108,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> fetchVideo() async {
+  Future<void> _fetchVideo() async {
     final response = await api.get('videos?num=3');
     setState(() {
       videos = List<Map<String, dynamic>>.from(response);
@@ -222,7 +221,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            ThumbnailGrid(videos: videos, crossAxisCount: 3),
+            ThumbnailGrid(videos: videos, crossAxisCount: 3, onRefresh: _fetchVideo),
             const SizedBox(height: 10),
             _buildSectionHeader(
               icon: AntDesign.alert_filled,
