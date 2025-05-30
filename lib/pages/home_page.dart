@@ -1,15 +1,15 @@
+import 'package:allycall/pages/report_detail_page.dart';
 import 'package:allycall/services/api_service.dart';
 import 'package:allycall/services/auth_service.dart';
+import 'package:allycall/utils/formatter.dart';
 import 'package:allycall/widgets/thumbnail_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:iconify_flutter/icons/ant_design.dart';
 import 'package:iconify_flutter/icons/gg.dart';
 import 'package:allycall/services/location_service.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:allycall/widgets/legal_card.dart';
 import 'package:allycall/pages/legal_detail_page.dart';
-
 
 final api = ApiService();
 
@@ -384,10 +384,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildReportCard(Map<String, dynamic> report) {
-    final createdDate = DateTime.parse(report['created_at']);
-    final formattedDate =
-        '${createdDate.year}-${createdDate.month.toString().padLeft(2, '0')}-${createdDate.day.toString().padLeft(2, '0')}';
-
     final tag = report['tag'] ?? '';
     final icon = tagIcons[tag] ?? Icons.warning; // fallback if not found
 
@@ -455,7 +451,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       Text(
-                        formattedDate,
+                        formatDate(report['created_at']),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.black45,
@@ -495,128 +491,6 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ReportDetailPage extends StatelessWidget {
-  final Map<String, dynamic> report;
-
-  const ReportDetailPage({super.key, required this.report});
-
-  @override
-  Widget build(BuildContext context) {
-    final double latitude = double.parse(report['latitude'].toString());
-    final double longitude = double.parse(report['longitude'].toString());
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF6F55D3),
-        elevation: 0,
-        leading: const BackButton(color: Colors.white),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(30),
-            bottomRight: Radius.circular(30),
-          ),
-        ),
-        title: const Text(''),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: ListView(
-          children: [
-            // Tag
-            Row(
-              children: [
-                const Icon(Icons.label, size: 16, color: Color(0xFF6E56C9)),
-                const SizedBox(width: 6),
-                Text(
-                  report['tag'] ?? '',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF6E56C9),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-
-            // Title
-            Text(
-              report['title'] ?? 'Untitled Report',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Report Location',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 200,
-              child: GoogleMap(
-                initialCameraPosition: CameraPosition(
-                  target: LatLng(latitude, longitude),
-                  zoom: 15,
-                ),
-                markers: {
-                  Marker(
-                    markerId: const MarkerId('report_location'),
-                    position: LatLng(latitude, longitude),
-                    infoWindow: InfoWindow(title: report['title'] ?? 'Report'),
-                  ),
-                },
-                zoomControlsEnabled: false,
-                myLocationEnabled: false,
-
-                rotateGesturesEnabled: false,
-                tiltGesturesEnabled: false,
-              ),
-            ),
-            const SizedBox(height: 8),
-            // Date
-            Row(
-              children: [
-                const Icon(Icons.schedule, size: 16, color: Colors.grey),
-                const SizedBox(width: 6),
-                Text(
-                  report['created_at'],
-                  style: const TextStyle(fontSize: 13, color: Colors.grey),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Address
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.place, size: 16, color: Colors.grey),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    report['long_address'] ?? 'Unknown location',
-                    style: const TextStyle(fontSize: 13, color: Colors.grey),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Description
-            Text(
-              report['description'] ?? 'No description provided.',
-              style: const TextStyle(fontSize: 14, height: 1.6),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Map
           ],
         ),
       ),

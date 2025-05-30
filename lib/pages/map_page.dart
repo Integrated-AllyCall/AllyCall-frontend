@@ -5,7 +5,6 @@ import 'package:allycall/utils/formatter.dart';
 import 'package:allycall/widgets/places_search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -353,20 +352,6 @@ class _AddReportSheetState extends State<AddReportSheet> {
         tags = ['Harassment'];
         selectedTag = 'Harassment';
         isLoadingTags = false;
-      });
-    }
-  }
-
-  void _selectDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDate,
-      firstDate: DateTime(2023),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null && picked != selectedDate) {
-      setState(() {
-        selectedDate = picked;
       });
     }
   }
