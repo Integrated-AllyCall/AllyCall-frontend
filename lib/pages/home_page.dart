@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:iconify_flutter/icons/ant_design.dart';
 import 'package:iconify_flutter/icons/gg.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:allycall/services/location_service.dart';
 
 final api = ApiService();
 
@@ -38,12 +40,35 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   Widget? _profileImage;
   List<Map<String, dynamic>> videos = [];
+  bool _isLoadingLocation = true;
+  String? _countryName;
 
   @override
   void initState() {
     super.initState();
     fetchVideo();
     loadProfileImage();
+    _fetchCountryFromCoordinates();
+  }
+
+  Future<void> _fetchCountryFromCoordinates() async {
+    try {
+      final position = await getCurrentLocation(); // from location_service.dart
+      final lat = position.latitude;
+      final lng = position.longitude;
+
+      final response = await ApiService().get('legals/here?lat=$lat&lng=$lng');
+      setState(() {
+        _countryName = response['name'] ?? 'Unknown country';
+        _isLoadingLocation = false;
+      });
+    } catch (e) {
+      print('Error fetching country: $e');
+      setState(() {
+        _countryName = 'Location unavailable';
+        _isLoadingLocation = false;
+      });
+    }
   }
 
   Future<void> fetchVideo() async {
@@ -164,12 +189,15 @@ class _HomePageState extends State<HomePage> {
             _buildSectionHeader(
               icon: AntDesign.alert_filled,
               title: 'Nearby Reports',
-              subtitle: 'Bangkok, Thailand',
             ),
             const SizedBox(height: 24),
             _buildSectionHeader(
               icon: svgBulb,
               title: 'Your Legal Safety Guide',
+              subtitle:
+                  _isLoadingLocation
+                      ? 'Loading location...'
+                      : _countryName ?? 'Unknown location',
             ),
             const SizedBox(height: 50),
           ],

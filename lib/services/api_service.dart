@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 class ApiService {
   final String baseUrl;
 
-  ApiService({this.baseUrl = 'http://10.4.56.28:3000/api/'});
+  ApiService({this.baseUrl = 'http://localhost:3000/api/'});
 
   // auth token from Firebase
   Future<String?> _getAuthToken() async {
@@ -15,10 +15,11 @@ class ApiService {
 
   // request handler
   Future<dynamic> _handleRequest(
-    Future<http.Response> Function(String url, Map<String, String> headers) method,
-    String endpoint,
-    {Map<String, dynamic>? body}
-  ) async {
+    Future<http.Response> Function(String url, Map<String, String> headers)
+    method,
+    String endpoint, {
+    Map<String, dynamic>? body,
+  }) async {
     try {
       final token = await _getAuthToken();
 
@@ -46,13 +47,17 @@ class ApiService {
 
   // GET
   Future<dynamic> get(String endpoint) {
-    return _handleRequest((url, headers) => http.get(Uri.parse(url), headers: headers), endpoint);
+    return _handleRequest(
+      (url, headers) => http.get(Uri.parse(url), headers: headers),
+      endpoint,
+    );
   }
 
   // POST
   Future<dynamic> post(String endpoint, Map<String, dynamic> body) {
     return _handleRequest(
-      (url, headers) => http.post(Uri.parse(url), headers: headers, body: jsonEncode(body)),
+      (url, headers) =>
+          http.post(Uri.parse(url), headers: headers, body: jsonEncode(body)),
       endpoint,
       body: body,
     );
@@ -61,7 +66,8 @@ class ApiService {
   // PUT
   Future<dynamic> put(String endpoint, Map<String, dynamic> body) {
     return _handleRequest(
-      (url, headers) => http.put(Uri.parse(url), headers: headers, body: jsonEncode(body)),
+      (url, headers) =>
+          http.put(Uri.parse(url), headers: headers, body: jsonEncode(body)),
       endpoint,
       body: body,
     );
@@ -69,6 +75,9 @@ class ApiService {
 
   // DELETE
   Future<dynamic> delete(String endpoint) {
-    return _handleRequest((url, headers) => http.delete(Uri.parse(url), headers: headers), endpoint);
+    return _handleRequest(
+      (url, headers) => http.delete(Uri.parse(url), headers: headers),
+      endpoint,
+    );
   }
 }
