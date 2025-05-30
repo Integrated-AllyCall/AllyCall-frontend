@@ -14,5 +14,11 @@ Future<Position> getCurrentLocation() async {
     }
   }
 
-  return await Geolocator.getCurrentPosition();
+  if (permission == LocationPermission.deniedForever) {
+    throw Exception('Location permissions are permanently denied.');
+  }
+
+  return await Geolocator.getCurrentPosition(
+    desiredAccuracy: LocationAccuracy.high,
+  );
 }
