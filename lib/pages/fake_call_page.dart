@@ -4,6 +4,7 @@ import 'package:allycall/pages/video_create_page.dart';
 import 'package:allycall/services/api_service.dart';
 import 'package:allycall/widgets/thumbnail_grid.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 
@@ -106,11 +107,7 @@ class _FakeCallPageState extends State<FakeCallPage>
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               sliver: SliverToBoxAdapter(
-                child: ThumbnailGrid(
-                  videos: videos,
-                  crossAxisCount: 2,
-                  onRefresh: _handleSearch,
-                ),
+                child: ThumbnailGrid(videos: videos, crossAxisCount: 2),
               ),
             ),
           ],
@@ -161,18 +158,32 @@ class _FakeCallPageState extends State<FakeCallPage>
                     try {
                       final result = await FilePicker.platform.pickFiles(
                         type: FileType.video,
+                        allowMultiple: false,
+                        withData: kIsWeb, // needed for web
                       );
-                      if (result != null && result.files.single.path != null) {
-                        final file = File(result.files.single.path!);
-                        print('Picked file: ${file.path}');
 
-                        // Navigate to EditPostPage
-                        Navigator.push(
+                      if (result != null && result.files.single.bytes != null) {
+                        final fileBytes = result.files.single.bytes!;
+                        final fileName = result.files.single.name;
+
+                        final response = await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => VideoCreatePage(file: file),
+                            builder:
+                                (_) => VideoCreatePage(
+                                  file:
+                                      kIsWeb
+                                          ? fileBytes
+                                          : File(
+                                            result.files.single.path!,
+                                          ), // only if not web
+                                  filename: fileName,
+                                ),
                           ),
                         );
+                        if (response == true) {
+                          await _handleSearch();
+                        }
                       } else {
                         print('No file selected');
                       }

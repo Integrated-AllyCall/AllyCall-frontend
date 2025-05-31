@@ -1,17 +1,24 @@
-import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:allycall/services/api_service.dart';
 import 'package:allycall/services/auth_service.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 final api = ApiService();
 
 class VideoCreatePage extends StatefulWidget {
-  final File file;
-  const VideoCreatePage({super.key, required this.file});
+  final dynamic file; // File (mobile) or Uint8List (web)
+  final String filename;
+
+  const VideoCreatePage({
+    super.key,
+    required this.file,
+    required this.filename,
+  });
 
   @override
   State<VideoCreatePage> createState() => _VideoCreatePageState();
@@ -49,23 +56,33 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
 
   Future<void> _generateThumbnailAndDuration() async {
     try {
-      final bytes = await VideoThumbnail.thumbnailData(
-        video: widget.file.path,
-        imageFormat: ImageFormat.JPEG,
-        maxHeight: 320,
-        maxWidth: 180,
-        quality: 75,
-      );
+      if (kIsWeb) {
+        final controller = VideoPlayerController.networkUrl(
+          Uri.dataFromBytes(widget.file, mimeType: 'video/mp4'),
+        );
+        await controller.initialize();
+        setState(() {
+          _videoDuration = controller.value.duration;
+        });
+        await controller.dispose();
+        // Thumbnail generation not supported in Flutter web easily
+      } else {
+        final bytes = await VideoThumbnail.thumbnailData(
+          video: widget.file.path,
+          imageFormat: ImageFormat.JPEG,
+          maxHeight: 320,
+          maxWidth: 180,
+          quality: 75,
+        );
 
-      final controller = VideoPlayerController.file(widget.file);
-      await controller.initialize();
-      final duration = controller.value.duration;
-      await controller.dispose();
-
-      setState(() {
-        _thumbnailBytes = bytes;
-        _videoDuration = duration;
-      });
+        final controller = VideoPlayerController.file(widget.file);
+        await controller.initialize();
+        setState(() {
+          _thumbnailBytes = bytes;
+          _videoDuration = controller.value.duration;
+        });
+        await controller.dispose();
+      }
     } catch (e) {
       debugPrint("Failed to extract video info: $e");
     }
@@ -73,35 +90,40 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
 
   Future<void> _uploadVideo() async {
     if (!_formKey.currentState!.validate() || _selectedTag == null) return;
-
     setState(() => _isUploading = true);
 
     try {
       final uri = Uri.parse('http://10.4.56.28:3000/api/videos');
-      final request =
-          http.MultipartRequest('POST', uri)
-            ..fields['title'] = _titleController.text
-            ..fields['description'] = _descController.text
-            ..fields['tag'] = _selectedTag!
-            ..fields['user_id'] = AuthService().getUserId()
-            ..files.add(
-              await http.MultipartFile.fromPath('video', widget.file.path),
-            );
-      if (_thumbnailBytes != null) {
-        final tempDir = Directory.systemTemp;
-        final thumbFile = await File('${tempDir.path}/thumb.jpg').create();
-        await thumbFile.writeAsBytes(_thumbnailBytes!);
+      final request = http.MultipartRequest('POST', uri)
+        ..fields['title'] = _titleController.text
+        ..fields['description'] = _descController.text
+        ..fields['tag'] = _selectedTag!
+        ..fields['user_id'] = AuthService().getUserId();
 
-        request.files.add(
-          await http.MultipartFile.fromPath('thumbnail', thumbFile.path),
-        );
+      if (kIsWeb) {
+        request.files.add(http.MultipartFile.fromBytes(
+          'video',
+          widget.file,
+          filename: widget.filename,
+          contentType: MediaType('video', 'mp4'),
+        ));
+      } else {
+        request.files.add(await http.MultipartFile.fromPath('video', widget.file.path));
+        if (_thumbnailBytes != null) {
+          request.files.add(http.MultipartFile.fromBytes(
+            'thumbnail',
+            _thumbnailBytes!,
+            filename: 'thumb.jpg',
+          ));
+        }
       }
+
       final response = await request.send();
       if (response.statusCode == 201) {
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Upload successful')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Upload successful')),
+          );
           Navigator.pop(context, true);
         }
       } else {
@@ -112,9 +134,9 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
       }
     } catch (e) {
       debugPrint("Upload error: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Upload failed')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Upload failed')),
+      );
     } finally {
       setState(() => _isUploading = false);
     }
@@ -124,24 +146,17 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F6FC),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: AppBar(
-          backgroundColor: const Color(0xFF6F55D3),
-          elevation: 0,
-          leading: const BackButton(color: Colors.white),
-          centerTitle: true,
-          title: const Text(
-            'Video Details',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-              fontSize: 18,
-            ),
-          ),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
-          ),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF6F55D3),
+        elevation: 0,
+        leading: const BackButton(color: Colors.white),
+        centerTitle: true,
+        title: const Text(
+          'Video Details',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+        ),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
         ),
       ),
       body: SingleChildScrollView(
@@ -151,124 +166,81 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
           child: Column(
             children: [
               Center(
-                child:
-                    _thumbnailBytes != null
-                        ? ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.memory(
-                            _thumbnailBytes!,
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                        : const CircularProgressIndicator(),
+                child: _thumbnailBytes != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.memory(_thumbnailBytes!, fit: BoxFit.cover),
+                      )
+                    : const CircularProgressIndicator(),
               ),
               const SizedBox(height: 24),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.schedule,
-                          size: 16,
-                          color: Color(0xFF8A8A8A),
-                        ),
-                        const SizedBox(width: 6),
-                        if (_videoDuration != null)
-                          Text(
-                            '${_videoDuration!.inMinutes.remainder(60).toString().padLeft(2, '0')}:${_videoDuration!.inSeconds.remainder(60).toString().padLeft(2, '0')} min',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF8A8A8A),
-                            ),
-                          )
-                        else
-                          const SizedBox.shrink(),
-                      ],
-                    ),
-                    const Text('Title'),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _titleController,
-                      validator:
-                          (val) =>
-                              val == null || val.isEmpty
-                                  ? 'Please enter title'
-                                  : null,
-                      decoration: const InputDecoration(
-                        hintText: 'Name of the video',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text('Category'),
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
-                      value: _selectedTag,
-                      items:
-                          _tags
-                              .map(
-                                (c) =>
-                                    DropdownMenuItem(value: c, child: Text(c)),
-                              )
-                              .toList(),
-                      onChanged:
-                          (val) => setState(() => _selectedTag = val),
-                      validator:
-                          (val) =>
-                              val == null || val.isEmpty
-                                  ? 'Please select a category'
-                                  : null,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text('Description'),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _descController,
-                      maxLines: 5,
-                      validator:
-                          (val) =>
-                              val == null || val.isEmpty
-                                  ? 'Please enter description'
-                                  : null,
-                      decoration: const InputDecoration(
-                        hintText: 'Description of the video',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 100),
+              _buildFormFields(),
             ],
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _isUploading ? null : _uploadVideo,
-        label:
-            _isUploading
-                ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
-                )
-                : const Text('Upload', style: TextStyle(color: Colors.white)),
+        label: _isUploading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+              )
+            : const Text('Upload', style: TextStyle(color: Colors.white)),
         icon: const Icon(Icons.upload, color: Colors.white),
         backgroundColor: const Color(0xFF6E56C9),
+      ),
+    );
+  }
+
+  Widget _buildFormFields() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_videoDuration != null)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.schedule, size: 16, color: Color(0xFF8A8A8A)),
+                const SizedBox(width: 6),
+                Text(
+                  '${_videoDuration!.inMinutes.remainder(60).toString().padLeft(2, '0')}:${_videoDuration!.inSeconds.remainder(60).toString().padLeft(2, '0')} min',
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF8A8A8A)),
+                ),
+              ],
+            ),
+          const SizedBox(height: 8),
+          const Text('Title'),
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: _titleController,
+            validator: (val) => val == null || val.isEmpty ? 'Please enter title' : null,
+            decoration: const InputDecoration(hintText: 'Name of the video', border: OutlineInputBorder()),
+          ),
+          const SizedBox(height: 16),
+          const Text('Category'),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            value: _selectedTag,
+            items: _tags.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+            onChanged: (val) => setState(() => _selectedTag = val),
+            validator: (val) => val == null || val.isEmpty ? 'Please select a category' : null,
+            decoration: const InputDecoration(border: OutlineInputBorder()),
+          ),
+          const SizedBox(height: 16),
+          const Text('Description'),
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: _descController,
+            maxLines: 5,
+            validator: (val) => val == null || val.isEmpty ? 'Please enter description' : null,
+            decoration: const InputDecoration(hintText: 'Description of the video', border: OutlineInputBorder()),
+          ),
+        ],
       ),
     );
   }
