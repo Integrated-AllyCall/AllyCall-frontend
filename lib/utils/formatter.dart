@@ -5,7 +5,7 @@ String formatDate(String isoDate) {
   final formatter = DateFormat('MMM d, y'); // e.g. May 25, 2025
   return formatter.format(dateTime);
 }
-String formatDuration(double seconds) {
+String formatDuration(num seconds) {
   final int totalSeconds = seconds.floor();
   final int hours = totalSeconds ~/ 3600;
   final int minutes = (totalSeconds % 3600) ~/ 60;
