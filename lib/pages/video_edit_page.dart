@@ -1,9 +1,14 @@
 import 'package:allycall/services/api_service.dart';
 import 'package:allycall/utils/formatter.dart';
 import 'package:flutter/material.dart';
+import 'package:iconify_flutter/iconify_flutter.dart';
+import 'package:iconify_flutter/icons/ph.dart';
 
 final api = ApiService();
-
+final svgTrash = '''<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M1.3335 3.08333H10.6668M4.8335 5.41667V8.91667M7.16683 5.41667V8.91667M1.91683 3.08333L2.50016 10.0833C2.50016 10.3928 2.62308 10.6895 2.84187 10.9083C3.06066 11.1271 3.35741 11.25 3.66683 11.25H8.3335C8.64292 11.25 8.93966 11.1271 9.15845 10.9083C9.37725 10.6895 9.50016 10.3928 9.50016 10.0833L10.0835 3.08333M4.25016 3.08333V1.33333C4.25016 1.17862 4.31162 1.03025 4.42102 0.920854C4.53041 0.811458 4.67879 0.75 4.8335 0.75H7.16683C7.32154 0.75 7.46991 0.811458 7.57931 0.920854C7.6887 1.03025 7.75016 1.17862 7.75016 1.33333V3.08333" stroke="white" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+''';
 class VideoEditPage extends StatefulWidget {
   final Map<String, dynamic> video;
   const VideoEditPage({super.key, required this.video});
@@ -24,9 +29,49 @@ class _VideoEditPageState extends State<VideoEditPage> {
   void initState() {
     super.initState();
     _fetchVideoTags();
-     _titleController.text = widget.video['title'] ?? 'Untitled Video';
-    _descController.text = widget.video['description'] ?? 'No description provided.';
+    _titleController.text = widget.video['title'] ?? 'Untitled Video';
+    _descController.text =
+        widget.video['description'] ?? 'No description provided.';
     _selectedTag = widget.video['tag'];
+  }
+
+  Future<void> _deleteVideo() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Delete Video'),
+            content: const Text('Are you sure you want to delete this video?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      await api.delete('videos/${widget.video['id']}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Video deleted successfully")),
+      );
+      Navigator.pop(context, true);
+    } catch (e) {
+      debugPrint("Error deleting video: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Failed to delete video")));
+    }
   }
 
   Future<void> _updateVideo() async {
@@ -227,11 +272,48 @@ class _VideoEditPageState extends State<VideoEditPage> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _updateVideo,
-        label: const Text('Confirm', style: TextStyle(color: Colors.white)),
-        icon: const Icon(Icons.check, color: Colors.white),
-        backgroundColor: const Color(0xFF6E56C9),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ElevatedButton(
+              onPressed: _deleteVideo,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFA587E7),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.all(20),
+              ),
+              child: Row(
+                children: [
+                  const Text('Delete', style: TextStyle(color: Colors.white)),
+                  const SizedBox(width: 8),
+                  Iconify(svgTrash, color: Colors.white),
+                ],
+              ),
+            ),
+            ElevatedButton(
+              onPressed: _updateVideo,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6E56C9),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.all(20),
+              ),
+              child: Row(
+                children: const [
+                  Text('Confirm', style: TextStyle(color: Colors.white)),
+                  SizedBox(width: 8),
+                  Iconify(Ph.check_square_bold, color: Colors.white),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -65,7 +65,6 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
           _videoDuration = controller.value.duration;
         });
         await controller.dispose();
-        // Thumbnail generation not supported in Flutter web easily
       } else {
         final bytes = await VideoThumbnail.thumbnailData(
           video: widget.file.path,
