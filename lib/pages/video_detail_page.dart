@@ -103,7 +103,12 @@ class _VideoDetailPageState extends State<VideoDetailPage>
     final thumbnail = video['thumbnail_url'] as String?;
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(170, 30, 170, 16),
+        padding: EdgeInsets.fromLTRB(
+          MediaQuery.of(context).size.width * 0.40,
+          20,
+          MediaQuery.of(context).size.width * 0.40,
+          16,
+        ),
         child: AspectRatio(
           aspectRatio: 9 / 16,
           child: ClipRRect(

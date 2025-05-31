@@ -159,7 +159,11 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
         centerTitle: true,
         title: const Text(
           'Upload Video',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18,),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+          ),
         ),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
@@ -172,7 +176,12 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(150, 0, 150, 16),
+                padding: EdgeInsets.fromLTRB(
+                  MediaQuery.of(context).size.width * 0.40,
+                  20,
+                  MediaQuery.of(context).size.width * 0.40,
+                  16,
+                ),
                 child: AspectRatio(
                   aspectRatio: 9 / 16,
                   child: ClipRRect(
@@ -191,25 +200,42 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
               ),
               const SizedBox(height: 24),
               _buildFormFields(),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isUploading ? null : _uploadVideo,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6F55D3),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child:
+                      _isUploading
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                          : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Text('Upload'),
+                              SizedBox(width: 8),
+                              Icon(Icons.upload),
+                            ],
+                          ),
+                ),
+              ),
             ],
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _isUploading ? null : _uploadVideo,
-        label:
-            _isUploading
-                ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
-                )
-                : const Text('Upload', style: TextStyle(color: Colors.white)),
-        icon: const Icon(Icons.upload, color: Colors.white),
-        backgroundColor: const Color(0xFF6E56C9),
       ),
     );
   }

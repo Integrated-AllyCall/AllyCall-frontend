@@ -41,6 +41,47 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     }
   }
 
+  Future<void> _deleteReport() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Delete Report'),
+            content: const Text('Are you sure you want to delete this report?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                style: TextButton.styleFrom(foregroundColor: Colors.black87),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Color(0xFF6F55D3),
+                ),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      await api.delete('reports/${widget.report['id']}');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Report deleted successfully')),
+      );
+      Navigator.pop(context, true);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to delete report: $e')));
+    }
+  }
+
   @override
   void initState() {
     _fetchReportTags();
@@ -87,11 +128,9 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                         ),
                         Spacer(),
                         IconButton(
-                            onPressed:
-                                () => Navigator.pop(context),
-                            icon: Icon(Icons.close, color: Colors.black,),
-                          ),
-            
+                          onPressed: () => Navigator.pop(context),
+                          icon: Icon(Icons.close, color: Colors.black),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -198,55 +237,105 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                     const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          final updatedReport = {
-                            "tag": _selectedTag,
-                            "title": _titleController.text,
-                            "description": _descController.text,
-                            "name": widget.report['name'] ?? '',
-                            "latitude": selectedLatLng.latitude,
-                            "longitude": selectedLatLng.longitude,
-                            "shortAddress":
-                                widget.report['short_address'] ?? '',
-                            "longAddress": widget.report['long_address'] ?? '',
-                          };
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: _deleteReport,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFA587E7),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Text('Delete'),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.delete),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                final updatedReport = {
+                                  "tag": _selectedTag,
+                                  "title": _titleController.text,
+                                  "description": _descController.text,
+                                  "name": widget.report['name'] ?? '',
+                                  "latitude": selectedLatLng.latitude,
+                                  "longitude": selectedLatLng.longitude,
+                                  "shortAddress":
+                                      widget.report['short_address'] ?? '',
+                                  "longAddress":
+                                      widget.report['long_address'] ?? '',
+                                };
 
-                          final reportId = widget.report['id'].toString();
-                          try {
-                            await api.put('reports/$reportId', updatedReport);
-                            if (!mounted) return;
-                            setState(() {
-                              widget.report['tag'] = _selectedTag;
-                              widget.report['title'] = _titleController.text;
-                              widget.report['description'] =
-                                  _descController.text;
-                              widget.report['latitude'] =
-                                  selectedLatLng.latitude;
-                              widget.report['longitude'] =
-                                  selectedLatLng.longitude;
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Report updated successfully'),
+                                final reportId = widget.report['id'].toString();
+                                try {
+                                  await api.put(
+                                    'reports/$reportId',
+                                    updatedReport,
+                                  );
+                                  if (!mounted) return;
+                                  setState(() {
+                                    widget.report['tag'] = _selectedTag;
+                                    widget.report['title'] =
+                                        _titleController.text;
+                                    widget.report['description'] =
+                                        _descController.text;
+                                    widget.report['latitude'] =
+                                        selectedLatLng.latitude;
+                                    widget.report['longitude'] =
+                                        selectedLatLng.longitude;
+                                  });
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Report updated successfully',
+                                      ),
+                                    ),
+                                  );
+                                  Navigator.pop(context, true);
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Failed to update report: $e',
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF6F55D3),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
-                            );
-                            Navigator.pop(context, true);
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Failed to update report: $e'),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Text('Save'),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.save),
+                                ],
                               ),
-                            );
-                          }
-                        },
-                        icon: const Icon(Icons.save),
-                        label: const Text('Save'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6F55D3),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -288,7 +377,11 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
         ),
         title: const Text(
           'Report Details',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18,),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+          ),
         ),
       ),
       body: Padding(
