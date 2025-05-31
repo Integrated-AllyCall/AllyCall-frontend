@@ -1,4 +1,5 @@
 import 'package:allycall/services/api_service.dart';
+import 'package:allycall/services/auth_service.dart';
 import 'package:allycall/utils/formatter.dart';
 import 'package:allycall/widgets/places_search_bar.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
   late GoogleMapController mapController;
   List<String> _tags = [];
   String? _selectedTag;
+  bool isLoadingTags = true;
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
 
@@ -29,9 +31,13 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
       setState(() {
         _tags = List<String>.from(tagResponse);
         _selectedTag = _tags.isNotEmpty ? widget.report['tag'] : _tags.first;
+        isLoadingTags = false;
       });
     } catch (e) {
       debugPrint("Error loading tags: $e");
+      setState(() {
+        isLoadingTags = false;
+      });
     }
   }
 
@@ -40,7 +46,8 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     _fetchReportTags();
     super.initState();
     _titleController.text = widget.report['title'] ?? 'Untitled Report';
-    _descController.text = widget.report['description'] ?? 'No description provided.';
+    _descController.text =
+        widget.report['description'] ?? 'No description provided.';
     _selectedTag = widget.report['tag'];
     selectedLatLng = LatLng(
       double.tryParse(widget.report['latitude'].toString()) ?? 0,
@@ -133,30 +140,6 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                     ),
 
                     const SizedBox(height: 16),
-                    const Text('Tag'),
-                    const SizedBox(height: 4),
-                    DropdownButtonFormField<String>(
-                      value: _selectedTag,
-                      items:
-                          _tags
-                              .map(
-                                (label) => DropdownMenuItem(
-                                  value: label,
-                                  child: Text(label),
-                                ),
-                              )
-                              .toList(),
-                      onChanged: (val) {
-                        setModalState(() {
-                          _selectedTag = val!;
-                        });
-                      },
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
                     const Text('Report Title'),
                     const SizedBox(height: 4),
                     TextField(
@@ -167,6 +150,28 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                       ),
                     ),
 
+                    const SizedBox(height: 16),
+                    const Text('Tag'),
+                    const SizedBox(height: 4),
+                    isLoadingTags
+                        ? const Center(child: CircularProgressIndicator())
+                        : DropdownButtonFormField<String>(
+                          value: _selectedTag,
+                          items:
+                              _tags
+                                  .map(
+                                    (tag) => DropdownMenuItem(
+                                      value: tag,
+                                      child: Text(tag.replaceAll('_', ' ')),
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged:
+                              (val) => setState(() => _selectedTag = val!),
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
                     const SizedBox(height: 16),
                     const Text('Report Detail'),
                     const SizedBox(height: 4),
@@ -201,7 +206,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                             await api.put('reports/$reportId', updatedReport);
                             if (!mounted) return;
                             setState(() {
-                              widget.report['tag'];
+                              widget.report['tag'] = _selectedTag;
                               widget.report['title'] = _titleController.text;
                               widget.report['description'] =
                                   _descController.text;
@@ -215,7 +220,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                                 content: Text('Report updated successfully'),
                               ),
                             );
-                            Navigator.pop(context);
+                            Navigator.pop(context, true);
                           } catch (e) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -245,18 +250,25 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isOwner = widget.report['users']['id'] == AuthService().getUserId();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: const Color(0xFF6F55D3),
         elevation: 0,
-        leading: const BackButton(color: Colors.white),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit, color: Colors.white),
-            onPressed: _openEditModal,
-          ),
-        ],
+        leading: BackButton(
+          color: Colors.white,
+          onPressed: () => Navigator.pop(context, true),
+        ),
+        actions:
+            isOwner
+                ? [
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.white),
+                    onPressed: _openEditModal,
+                  ),
+                ]
+                : null,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             bottomLeft: Radius.circular(30),

@@ -31,8 +31,8 @@ class _ProfilePageState extends State<ProfilePage>
     with TickerProviderStateMixin {
   Widget? _profileImage;
   late final TabController _tabController;
-  List<Map<String, dynamic>> videos = [];
-  List<Map<String, dynamic>> reports = [];
+  List<Map<String, dynamic>> _videos = [];
+  List<Map<String, dynamic>> _reports = [];
   void loadProfileImage() async {
     final image = await AuthService().getProfileImage(size: 80);
     setState(() {
@@ -40,18 +40,18 @@ class _ProfilePageState extends State<ProfilePage>
     });
   }
 
-  Future<void> fetchVideo() async {
+  Future<void> _fetchVideo() async {
     final response = await api.get('videos/user/${AuthService().getUserId()}');
     setState(() {
-      videos = List<Map<String, dynamic>>.from(response);
+      _videos = List<Map<String, dynamic>>.from(response);
     });
   }
 
-  Future<void> fetchReports() async {
-    final userId = AuthService().getUserId();
+  Future<void> _fetchReports() async {
+    final userId = await AuthService().getUserId();
     final response = await api.get('reports/user/$userId');
     setState(() {
-      reports = List<Map<String, dynamic>>.from(response);
+      _reports = List<Map<String, dynamic>>.from(response);
     });
   }
 
@@ -60,8 +60,8 @@ class _ProfilePageState extends State<ProfilePage>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     loadProfileImage();
-    fetchVideo();
-    fetchReports();
+    _fetchVideo();
+    _fetchReports();
   }
 
   @override
@@ -76,23 +76,26 @@ class _ProfilePageState extends State<ProfilePage>
             children: [
               SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
-                child: ThumbnailGrid(videos: videos, crossAxisCount: 3),
+                child: ThumbnailGrid(videos: _videos, crossAxisCount: 3, onRefresh: _fetchVideo,),
               ),
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: ListView(
                   children:
-                      reports.map((report) {
+                      _reports.map((report) {
                         return ReportCard(
                           report: report,
-                          onTap: () {
-                            Navigator.push(
+                          onTap: () async {
+                            final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder:
                                     (_) => ReportDetailPage(report: report),
                               ),
                             );
+                            if (result == true) {
+                              await _fetchReports();
+                            }
                           },
                         );
                       }).toList(),
