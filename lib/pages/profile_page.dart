@@ -67,38 +67,51 @@ class _ProfilePageState extends State<ProfilePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F6FC),
+      backgroundColor: const Color(0xFF6F55D3),
       body: SafeArea(
         child: NestedScrollView(
           headerSliverBuilder: (context, _) => [_buildAppBar(context)],
           body: TabBarView(
             controller: _tabController,
             children: [
-              SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: ThumbnailGrid(videos: _videos, crossAxisCount: 3, onRefresh: _fetchVideo,),
+               // VIdeo Tab
+              Container(
+                color: Color(0xFFF7F6FC),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: ThumbnailGrid(
+                    videos: _videos,
+                    crossAxisCount: 3,
+                    onRefresh: _fetchVideo,
+                  ),
+                ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: ListView(
-                  children:
-                      _reports.map((report) {
-                        return ReportCard(
-                          report: report,
-                          onTap: () async {
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (_) => ReportDetailPage(report: report),
-                              ),
-                            );
-                            if (result == true) {
-                              await _fetchReports();
-                            }
-                          },
-                        );
-                      }).toList(),
+
+              // Report Tab
+              Container(
+                color: Color(0xFFF7F6FC),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: ListView(
+                    children:
+                        _reports.map((report) {
+                          return ReportCard(
+                            report: report,
+                            onTap: () async {
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => ReportDetailPage(report: report),
+                                ),
+                              );
+                              if (result == true) {
+                                await _fetchReports();
+                              }
+                            },
+                          );
+                        }).toList(),
+                  ),
                 ),
               ),
             ],
@@ -121,7 +134,7 @@ class _ProfilePageState extends State<ProfilePage>
           children: [
             Container(
               width: double.infinity,
-              height: 60,
+              height: 55,
               decoration: const BoxDecoration(
                 color: Color(0xFF6F55D3),
                 borderRadius: BorderRadius.only(

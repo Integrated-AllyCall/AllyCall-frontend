@@ -46,53 +46,56 @@ class _VideoDetailPageState extends State<VideoDetailPage>
 
   @override
   Widget build(BuildContext context) {
+    final isOwner = _video?['users']['id'] == AuthService().getUserId();
     return Scaffold(
       backgroundColor: const Color(0xFFF7F6FC),
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: <Widget>[
-            _buildAppBar(context, _video!),
-            _buildVideo(_video!),
-            _buildMainContent(_video!),
-          ],
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF6F55D3),
+        elevation: 0,
+        leading: BackButton(
+          color: Colors.white,
+          onPressed: () => Navigator.pop(context, true),
+        ),
+        actions:
+            isOwner
+                ? [
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.white),
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => VideoEditPage(video: _video!),
+                        ),
+                      );
+
+                      if (result == true) {
+                        await _fetchVideo();
+                      }
+                    },
+                  ),
+                ]
+                : null,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(30),
+            bottomRight: Radius.circular(30),
+          ),
+        ),
+        title: const Text(
+          'Video Details',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+            fontSize: 18,
+          ),
         ),
       ),
-    );
-  }
-
-  SliverAppBar _buildAppBar(BuildContext context, video) {
-    final isOwner = video['users']['id'] == AuthService().getUserId();
-
-    return SliverAppBar(
-      pinned: true,
-      forceMaterialTransparency: true,
-      floating: false,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.black),
-        onPressed: () {
-          Navigator.pop(context, true);
-        },
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: <Widget>[_buildVideo(_video!), _buildMainContent(_video!)],
+        ),
       ),
-      actions:
-          isOwner
-              ? [
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.black),
-                  onPressed: () async {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => VideoEditPage(video: video),
-                      ),
-                    );
-
-                    if (result == true) {
-                      await _fetchVideo();
-                    }
-                  },
-                ),
-              ]
-              : null,
     );
   }
 
@@ -100,7 +103,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
     final thumbnail = video['thumbnail_url'] as String?;
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(170, 0, 170, 16),
+        padding: const EdgeInsets.fromLTRB(170, 30, 170, 16),
         child: AspectRatio(
           aspectRatio: 9 / 16,
           child: ClipRRect(

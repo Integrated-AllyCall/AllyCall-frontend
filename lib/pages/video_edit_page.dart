@@ -82,7 +82,7 @@ class _VideoEditPageState extends State<VideoEditPage> {
           ),
           centerTitle: true,
           title: const Text(
-            'Video Details',
+            'Edit Video',
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w700,

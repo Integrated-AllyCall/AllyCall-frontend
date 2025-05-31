@@ -6,7 +6,7 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:label="allycall"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         <meta-data android:name="com.google.android.geo.API_KEY"
                android:value="AIzaSyBPN4hdWKPQ44izRkZP-uLEPmY7P1F4FQg"/>
         <activity

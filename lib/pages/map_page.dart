@@ -108,6 +108,19 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF6F55D3),
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          'Unsafe Spots',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+            fontSize: 18,
+          ),
+        ),
+      ),
       body: Stack(
         children: [
           GoogleMap(
@@ -125,23 +138,12 @@ class _MapPageState extends State<MapPage> {
                 bottomRight: Radius.circular(30),
               ),
             ),
-            height: 80,
+            height: 20,
             width: double.infinity,
             padding: const EdgeInsets.all(10),
-            child: const Padding(
-              padding: EdgeInsets.only(top: 5),
-              child: Text(
-                'Unsafe Spots',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                ),
-              ),
-            ),
           ),
           Container(
-            padding: const EdgeInsets.only(top: 60, left: 20, right: 20),
+            padding: const EdgeInsets.only(top: 0, left: 20, right: 20),
             alignment: Alignment.topCenter,
             child: CustomPlacesSearchBar(
               onPlaceSelected: (lat, lng, desc) {

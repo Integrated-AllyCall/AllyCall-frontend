@@ -28,16 +28,15 @@ class AuthService {
               if (wasSynchronouslyLoaded) return child;
               return AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                child:
-                    frame != null
-                        ? child
-                        : SizedBox(
-                          height: size,
-                          width: size,
-                          child: const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
+                child: frame != null
+                    ? child
+                    : SizedBox(
+                        height: size,
+                        width: size,
+                        child: const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         ),
+                      ),
               );
             },
           ),
@@ -50,87 +49,113 @@ class AuthService {
     return null;
   }
 
-  getUserId() {
-    return _auth.currentUser?.uid;
-  }
+  getUserId() => _auth.currentUser?.uid;
 
-  getUserName() {
-    return _auth.currentUser?.displayName ?? "Guest";
-  }
+  getUserName() => _auth.currentUser?.displayName ?? "Guest";
 
-  getUserEmail() {
-    return _auth.currentUser?.email ?? "guest@example.com";
-  }
+  getUserEmail() => _auth.currentUser?.email ?? "guest@example.com";
 
   Future<void> signInWithGoogle() async {
-    await _googleSignIn.signOut();
-    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-    if (googleUser == null) return; // User cancelled
+    try {
+      await _googleSignIn.signOut();
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return;
 
-    final GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
 
-    final userCredential = await _auth.signInWithCredential(credential);
-    final user = userCredential.user;
+      final userCredential = await _auth.signInWithCredential(credential);
+      final user = userCredential.user;
 
-    if (user != null) {
-      final isFirstTime = userCredential.additionalUserInfo?.isNewUser ?? false;
+      if (user != null) {
+        final isFirstTime =
+            userCredential.additionalUserInfo?.isNewUser ?? false;
 
-      if (isFirstTime) {
-        GlobalFlags.isNewUser = true;
-        await api.post("users", {
-          'id': user.uid,
-          'email': user.email,
-          'username': user.displayName,
-          'image_url': user.photoURL,
-        });
+        if (isFirstTime) {
+          GlobalFlags.isNewUser = true;
+          await api.post("users", {
+            'id': user.uid,
+            'email': user.email,
+            'username': user.displayName,
+            'image_url': user.photoURL,
+          });
+        }
       }
+    } catch (e) {
+      debugPrint('Google sign-in error: $e');
+      rethrow;
     }
   }
 
   Future<void> signIn(String email, String password) async {
-    await _auth.signInWithEmailAndPassword(email: email, password: password);
+    try {
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+    } catch (e) {
+      debugPrint('Email/password sign-in error: $e');
+      rethrow;
+    }
   }
 
   Future<void> register(String email, String password, String username) async {
-    final userCredential = await _auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-    final user = userCredential.user;
-    if (user != null) {
-      await user.updateDisplayName(username);
-      await sendVerificationEmail();
-      GlobalFlags.isNewUser = true;
+    try {
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-      await api.post("users", {
-        'id': user.uid,
-        'email': user.email,
-        'username': username,
-      });
+      final user = userCredential.user;
+      if (user != null) {
+        await user.updateDisplayName(username);
+        await sendVerificationEmail();
+        GlobalFlags.isNewUser = true;
+
+        await api.post("users", {
+          'id': user.uid,
+          'email': user.email,
+          'username': username,
+        });
+      }
+    } catch (e) {
+      debugPrint('Registration error: $e');
+      rethrow;
     }
   }
 
   Future<void> sendVerificationEmail() async {
-    final user = _auth.currentUser;
-    if (user != null && !user.emailVerified) {
-      await user.sendEmailVerification();
+    try {
+      final user = _auth.currentUser;
+      if (user != null && !user.emailVerified) {
+        await user.sendEmailVerification();
+      }
+    } catch (e) {
+      debugPrint('Email verification error: $e');
+      rethrow;
     }
   }
 
   Future<bool> isEmailVerified() async {
-    final user = _auth.currentUser;
-    await user?.reload(); // Refresh user data
-    return user?.emailVerified ?? false;
+    try {
+      final user = _auth.currentUser;
+      await user?.reload();
+      return user?.emailVerified ?? false;
+    } catch (e) {
+      debugPrint('Check email verification error: $e');
+      return false;
+    }
   }
 
   Future<void> signOut() async {
-    await _googleSignIn.signOut();
-    await _auth.signOut();
+    try {
+      await _googleSignIn.signOut();
+      await _auth.signOut();
+    } catch (e) {
+      debugPrint('Sign out error: $e');
+      rethrow;
+    }
   }
 }

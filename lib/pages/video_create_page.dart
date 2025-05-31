@@ -159,7 +159,7 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
         leading: const BackButton(color: Colors.white),
         centerTitle: true,
         title: const Text(
-          'Video Details',
+          'Upload Video',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
         ),
         shape: const RoundedRectangleBorder(
