@@ -95,13 +95,13 @@ class _VideoEditPageState extends State<VideoEditPage> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(170, 0, 170, 16),
+                padding: const EdgeInsets.fromLTRB(150, 0, 150, 16),
                 child: AspectRatio(
                   aspectRatio: 9 / 16,
                   child: ClipRRect(

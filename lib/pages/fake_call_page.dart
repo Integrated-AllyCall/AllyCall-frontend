@@ -159,7 +159,7 @@ class _FakeCallPageState extends State<FakeCallPage>
                       final result = await FilePicker.platform.pickFiles(
                         type: FileType.video,
                         allowMultiple: false,
-                        withData: kIsWeb, // needed for web
+                        withData: true,
                       );
 
                       if (result != null && result.files.single.bytes != null) {
