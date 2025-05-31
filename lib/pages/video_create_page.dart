@@ -160,7 +160,7 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
         centerTitle: true,
         title: const Text(
           'Upload Video',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18,),
         ),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),

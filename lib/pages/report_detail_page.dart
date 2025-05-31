@@ -286,7 +286,10 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
             bottomRight: Radius.circular(30),
           ),
         ),
-        title: const Text(''),
+        title: const Text(
+          'Report Details',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18,),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
