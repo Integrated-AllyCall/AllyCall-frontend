@@ -105,9 +105,9 @@ class _VideoDetailPageState extends State<VideoDetailPage>
       child: Padding(
         padding: EdgeInsets.fromLTRB(
           MediaQuery.of(context).size.width * 0.40,
-          20,
+          10,
           MediaQuery.of(context).size.width * 0.40,
-          16,
+          10,
         ),
         child: AspectRatio(
           aspectRatio: 9 / 16,

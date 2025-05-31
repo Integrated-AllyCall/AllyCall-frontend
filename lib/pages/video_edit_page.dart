@@ -148,9 +148,9 @@ class _VideoEditPageState extends State<VideoEditPage> {
             Padding(
               padding: EdgeInsets.fromLTRB(
                 MediaQuery.of(context).size.width * 0.40,
-                20,
+                10,
                 MediaQuery.of(context).size.width * 0.40,
-                16,
+                10,
               ),
               child: AspectRatio(
                 aspectRatio: 9 / 16,

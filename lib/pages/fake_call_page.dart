@@ -200,7 +200,7 @@ class _FakeCallPageState extends State<FakeCallPage>
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
-                      vertical: 15,
+                      vertical: 20,
                     ),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,

@@ -1,8 +1,10 @@
 import 'dart:typed_data';
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:allycall/services/api_service.dart';
 import 'package:allycall/services/auth_service.dart';
+import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:video_player/video_player.dart';
@@ -30,10 +32,12 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
   final _descController = TextEditingController();
   Uint8List? _thumbnailBytes;
   Duration? _videoDuration;
-
+  final GlobalKey _videoKey = GlobalKey();
+  VideoPlayerController? _webVideoController; // For web video preview & capture
   String? _selectedTag;
   List<String> _tags = [];
   bool _isUploading = false;
+  final GlobalKey _hiddenVideoKey = GlobalKey();
 
   @override
   void initState() {
@@ -57,14 +61,30 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
   Future<void> _generateThumbnailAndDuration() async {
     try {
       if (kIsWeb) {
-        final controller = VideoPlayerController.networkUrl(
+        _webVideoController = VideoPlayerController.networkUrl(
           Uri.dataFromBytes(widget.file, mimeType: 'video/mp4'),
         );
-        await controller.initialize();
+
+        await _webVideoController!.initialize();
+        await _webVideoController!.setVolume(0);
+        await _webVideoController!.seekTo(const Duration(milliseconds: 500));
+
         setState(() {
-          _videoDuration = controller.value.duration;
+          _videoDuration = _webVideoController!.value.duration;
         });
-        await controller.dispose();
+
+        // Wait for hidden video to render
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          await Future.delayed(
+            const Duration(milliseconds: 200),
+          ); // wait to paint
+          final thumb = await _captureHiddenThumbnail();
+          if (mounted && thumb != null) {
+            setState(() {
+              _thumbnailBytes = thumb;
+            });
+          }
+        });
       } else {
         final bytes = await VideoThumbnail.thumbnailData(
           video: widget.file.path,
@@ -85,6 +105,17 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
     } catch (e) {
       debugPrint("Failed to extract video info: $e");
     }
+  }
+
+  Future<Uint8List?> _captureHiddenThumbnail() async {
+    final boundary =
+        _hiddenVideoKey.currentContext?.findRenderObject()
+            as RenderRepaintBoundary?;
+    if (boundary == null) return null;
+
+    final image = await boundary.toImage(pixelRatio: 2.0);
+    final byteData = await image.toByteData(format: ImageByteFormat.png);
+    return byteData?.buffer.asUint8List();
   }
 
   Future<void> _uploadVideo() async {
@@ -177,24 +208,33 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
             children: [
               Padding(
                 padding: EdgeInsets.fromLTRB(
-                  MediaQuery.of(context).size.width * 0.40,
-                  20,
-                  MediaQuery.of(context).size.width * 0.40,
-                  16,
+                  MediaQuery.of(context).size.width * 0.35,
+                  10,
+                  MediaQuery.of(context).size.width * 0.35,
+                  10,
                 ),
                 child: AspectRatio(
                   aspectRatio: 9 / 16,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child:
-                        _thumbnailBytes != null
-                            ? Image.memory(
-                              _thumbnailBytes!,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
-                            )
-                            : const Center(child: CircularProgressIndicator()),
+                    child: RepaintBoundary(
+                      key: _videoKey,
+                      child:
+                          _thumbnailBytes != null
+                              ? Image.memory(
+                                _thumbnailBytes!,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                height: double.infinity,
+                              )
+                              : (kIsWeb &&
+                                  _webVideoController != null &&
+                                  _webVideoController!.value.isInitialized)
+                              ? VideoPlayer(_webVideoController!)
+                              : const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                    ),
                   ),
                 ),
               ),
