@@ -5,10 +5,12 @@ import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:iconify_flutter/icons/ph.dart';
 
 final api = ApiService();
-final svgTrash = '''<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+final svgTrash =
+    '''<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M1.3335 3.08333H10.6668M4.8335 5.41667V8.91667M7.16683 5.41667V8.91667M1.91683 3.08333L2.50016 10.0833C2.50016 10.3928 2.62308 10.6895 2.84187 10.9083C3.06066 11.1271 3.35741 11.25 3.66683 11.25H8.3335C8.64292 11.25 8.93966 11.1271 9.15845 10.9083C9.37725 10.6895 9.50016 10.3928 9.50016 10.0833L10.0835 3.08333M4.25016 3.08333V1.33333C4.25016 1.17862 4.31162 1.03025 4.42102 0.920854C4.53041 0.811458 4.67879 0.75 4.8335 0.75H7.16683C7.32154 0.75 7.46991 0.811458 7.57931 0.920854C7.6887 1.03025 7.75016 1.17862 7.75016 1.33333V3.08333" stroke="white" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 ''';
+
 class VideoEditPage extends StatefulWidget {
   final Map<String, dynamic> video;
   const VideoEditPage({super.key, required this.video});
@@ -40,19 +42,25 @@ class _VideoEditPageState extends State<VideoEditPage> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('Delete Video'),
+            backgroundColor: Colors.white,
+            title: const Text(
+              'Delete Video',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
             content: const Text('Are you sure you want to delete this video?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
+                style: TextButton.styleFrom(foregroundColor: Colors.black87),
                 child: const Text('Cancel'),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(color: Colors.red),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Color(0xFF6F55D3),
                 ),
+                child: const Text('Delete'),
               ),
             ],
           ),
