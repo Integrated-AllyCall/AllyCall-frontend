@@ -120,7 +120,7 @@ class _ReportCreateSheetState extends State<ReportCreateSheet> {
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(Icons.close, color: Colors.black,),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],

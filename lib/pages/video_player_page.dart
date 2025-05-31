@@ -19,6 +19,15 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     super.initState();
     _videoPlayerController = VideoPlayerController.network(widget.videoUrl)
       ..initialize().then((_) {
+        if (!mounted) return;
+
+        _videoPlayerController.addListener(() {
+          final error = _videoPlayerController.value.errorDescription;
+          if (error != null) {
+            debugPrint('🎥 Video error: $error');
+          }
+        });
+
         setState(() {
           _chewieController = ChewieController(
             videoPlayerController: _videoPlayerController,
@@ -54,7 +63,11 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
             left: 10,
             child: SafeArea(
               child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 20,
+                ),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),

@@ -76,12 +76,23 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Edit Report',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        const Text(
+                          'Edit Report',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Spacer(),
+                        IconButton(
+                            onPressed:
+                                () => Navigator.pop(context),
+                            icon: Icon(Icons.close, color: Colors.black,),
+                          ),
+            
+                      ],
                     ),
                     const SizedBox(height: 16),
 
