@@ -24,7 +24,7 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
   Uint8List? _thumbnailBytes;
   Duration? _videoDuration;
 
-  String? _selectedCategory;
+  String? _selectedTag;
   List<String> _tags = [];
   bool _isUploading = false;
 
@@ -40,7 +40,7 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
       final tagResponse = await api.get('videos/tags');
       setState(() {
         _tags = List<String>.from(tagResponse);
-        _selectedCategory = _tags.isNotEmpty ? _tags.first : null;
+        _selectedTag = _tags.isNotEmpty ? _tags.first : null;
       });
     } catch (e) {
       debugPrint("Error loading tags: $e");
@@ -72,7 +72,7 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
   }
 
   Future<void> _uploadVideo() async {
-    if (!_formKey.currentState!.validate() || _selectedCategory == null) return;
+    if (!_formKey.currentState!.validate() || _selectedTag == null) return;
 
     setState(() => _isUploading = true);
 
@@ -82,7 +82,7 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
           http.MultipartRequest('POST', uri)
             ..fields['title'] = _titleController.text
             ..fields['description'] = _descController.text
-            ..fields['tag'] = _selectedCategory!
+            ..fields['tag'] = _selectedTag!
             ..fields['user_id'] = AuthService().getUserId()
             ..files.add(
               await http.MultipartFile.fromPath('video', widget.file.path),
@@ -211,7 +211,7 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
                     const Text('Category'),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      value: _selectedCategory,
+                      value: _selectedTag,
                       items:
                           _tags
                               .map(
@@ -220,7 +220,7 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
                               )
                               .toList(),
                       onChanged:
-                          (val) => setState(() => _selectedCategory = val),
+                          (val) => setState(() => _selectedTag = val),
                       validator:
                           (val) =>
                               val == null || val.isEmpty

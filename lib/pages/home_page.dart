@@ -92,10 +92,7 @@ class _HomePageState extends State<HomePage> {
     'Assault': svgAim,
     'Suspicious Activity': Icons.visibility_outlined,
   };
-  final Map<String, String> displayTags = {
-    'Unsafe_Area': 'Unsafe Area',
-    'Suspicious_Activity': 'Suspicious Activity',
-  };
+
   Future<void> _fetchNearbyReports() async {
     try {
       final position = await getCurrentLocation();
@@ -235,7 +232,11 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            ThumbnailGrid(videos: videos, crossAxisCount: 3, onRefresh: _fetchVideo),
+            ThumbnailGrid(
+              videos: videos,
+              crossAxisCount: 3,
+              onRefresh: _fetchVideo,
+            ),
             const SizedBox(height: 10),
             _buildSectionHeader(
               icon: AntDesign.alert_filled,
@@ -385,7 +386,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildReportCard(Map<String, dynamic> report) {
     final tag = report['tag'] ?? '';
-    final icon = tagIcons[tag] ?? Icons.warning; // fallback if not found
+    final icon = tagIcons[tag] ?? Icons.warning;
 
     return GestureDetector(
       onTap: () {

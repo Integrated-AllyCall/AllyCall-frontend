@@ -1,5 +1,3 @@
-
-import 'package:allycall/pages/profile_page.dart';
 import 'package:allycall/services/api_service.dart';
 import 'package:allycall/utils/formatter.dart';
 import 'package:allycall/widgets/places_search_bar.dart';
@@ -18,16 +16,32 @@ class ReportDetailPage extends StatefulWidget {
 }
 
 class _ReportDetailPageState extends State<ReportDetailPage> {
-  late String title;
-  late String description;
   late LatLng selectedLatLng;
   late GoogleMapController mapController;
+  List<String> _tags = [];
+  String? _selectedTag;
+  final _titleController = TextEditingController();
+  final _descController = TextEditingController();
+
+  Future<void> _fetchReportTags() async {
+    try {
+      final tagResponse = await api.get('reports/tags');
+      setState(() {
+        _tags = List<String>.from(tagResponse);
+        _selectedTag = _tags.isNotEmpty ? widget.report['tag'] : _tags.first;
+      });
+    } catch (e) {
+      debugPrint("Error loading tags: $e");
+    }
+  }
 
   @override
   void initState() {
+    _fetchReportTags();
     super.initState();
-    title = widget.report['title'] ?? 'Untitled Report';
-    description = widget.report['description'] ?? 'No description provided.';
+    _titleController.text = widget.report['title'] ?? 'Untitled Report';
+    _descController.text = widget.report['description'] ?? 'No description provided.';
+    _selectedTag = widget.report['tag'];
     selectedLatLng = LatLng(
       double.tryParse(widget.report['latitude'].toString()) ?? 0,
       double.tryParse(widget.report['longitude'].toString()) ?? 0,
@@ -35,13 +49,6 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
   }
 
   void _openEditModal() {
-    final titleController = TextEditingController(text: title);
-    final descriptionController = TextEditingController(text: description);
-    final List<String> tagLabels = enumTags.keys.toList();
-
-    String selectedDisplayTag =
-        displayTags[widget.report['tag']] ?? widget.report['tag'];
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -129,9 +136,9 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                     const Text('Tag'),
                     const SizedBox(height: 4),
                     DropdownButtonFormField<String>(
-                      value: selectedDisplayTag,
+                      value: _selectedTag,
                       items:
-                          tagLabels
+                          _tags
                               .map(
                                 (label) => DropdownMenuItem(
                                   value: label,
@@ -141,7 +148,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                               .toList(),
                       onChanged: (val) {
                         setModalState(() {
-                          selectedDisplayTag = val!;
+                          _selectedTag = val!;
                         });
                       },
                       decoration: const InputDecoration(
@@ -153,7 +160,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                     const Text('Report Title'),
                     const SizedBox(height: 4),
                     TextField(
-                      controller: titleController,
+                      controller: _titleController,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Enter report title',
@@ -164,7 +171,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                     const Text('Report Detail'),
                     const SizedBox(height: 4),
                     TextField(
-                      controller: descriptionController,
+                      controller: _descController,
                       maxLines: 4,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
@@ -177,17 +184,10 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () async {
-                          setState(() {
-                            title = titleController.text;
-                            description = descriptionController.text;
-                          });
-
                           final updatedReport = {
-                            "tag":
-                                enumTags[selectedDisplayTag] ??
-                                selectedDisplayTag,
-                            "title": titleController.text,
-                            "description": descriptionController.text,
+                            "tag": _selectedTag,
+                            "title": _titleController.text,
+                            "description": _descController.text,
                             "name": widget.report['name'] ?? '',
                             "latitude": selectedLatLng.latitude,
                             "longitude": selectedLatLng.longitude,
@@ -201,12 +201,10 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                             await api.put('reports/$reportId', updatedReport);
                             if (!mounted) return;
                             setState(() {
-                              widget.report['tag'] =
-                                  enumTags[selectedDisplayTag] ??
-                                  selectedDisplayTag;
-                              widget.report['title'] = titleController.text;
+                              widget.report['tag'];
+                              widget.report['title'] = _titleController.text;
                               widget.report['description'] =
-                                  descriptionController.text;
+                                  _descController.text;
                               widget.report['latitude'] =
                                   selectedLatLng.latitude;
                               widget.report['longitude'] =
@@ -276,7 +274,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                 const Icon(Icons.label, size: 16, color: Color(0xFF6E56C9)),
                 const SizedBox(width: 6),
                 Text(
-                  displayTags[widget.report['tag']] ?? widget.report['tag'],
+                  widget.report['tag'],
                   style: const TextStyle(
                     fontSize: 13,
                     color: Color(0xFF6E56C9),
@@ -286,7 +284,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              title,
+              _titleController.text,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -341,7 +339,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
             ),
             const SizedBox(height: 16),
             Text(
-              description,
+              _descController.text,
               style: const TextStyle(fontSize: 14, height: 1.6),
             ),
           ],

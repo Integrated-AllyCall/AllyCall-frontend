@@ -17,16 +17,16 @@ class _VideoEditPageState extends State<VideoEditPage> {
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
 
-  String? _selectedCategory;
+  String? _selectedTag;
   List<String> _tags = [];
 
   @override
   void initState() {
     super.initState();
     _fetchVideoTags();
-    _titleController.text = widget.video['title'] ?? '';
-    _descController.text = widget.video['description'] ?? '';
-    _selectedCategory = widget.video['tag'];
+     _titleController.text = widget.video['title'] ?? 'Untitled Video';
+    _descController.text = widget.video['description'] ?? 'No description provided.';
+    _selectedTag = widget.video['tag'];
   }
 
   Future<void> _updateVideo() async {
@@ -34,7 +34,7 @@ class _VideoEditPageState extends State<VideoEditPage> {
 
     try {
       await api.put('videos/${widget.video['id']}', {
-        "tag": _selectedCategory,
+        "tag": _selectedTag,
         "title": _titleController.text,
         "description": _descController.text,
       });
@@ -56,7 +56,7 @@ class _VideoEditPageState extends State<VideoEditPage> {
       final tagResponse = await api.get('videos/tags');
       setState(() {
         _tags = List<String>.from(tagResponse);
-        _selectedCategory = _tags.isNotEmpty ? _tags.first : null;
+        _selectedTag = _tags.isNotEmpty ? widget.video['tag'] : _tags.first;
       });
     } catch (e) {
       debugPrint("Error loading tags: $e");
@@ -185,7 +185,7 @@ class _VideoEditPageState extends State<VideoEditPage> {
                     const Text('Category'),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      value: _selectedCategory,
+                      value: _selectedTag,
                       items:
                           _tags
                               .map(
@@ -193,8 +193,7 @@ class _VideoEditPageState extends State<VideoEditPage> {
                                     DropdownMenuItem(value: c, child: Text(c)),
                               )
                               .toList(),
-                      onChanged:
-                          (val) => setState(() => _selectedCategory = val),
+                      onChanged: (val) => setState(() => _selectedTag = val),
                       validator:
                           (val) =>
                               val == null || val.isEmpty

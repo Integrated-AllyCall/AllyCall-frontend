@@ -22,26 +22,9 @@ final Map<String, dynamic> tagIcons = {
   'Harassment': Icons.do_not_touch,
   'Stalking': Icons.directions_walk,
   'Catcalling': Icons.record_voice_over,
-  'Unsafe Area': Icons.dangerous_rounded, // fixed name
-  'Assault': svgAim, // svgGun is a String, others are IconData
-  'Suspicious Activity': Icons.visibility_outlined, // fixed name
-};
-final Map<String, String> displayTags = {
-  'Harassment': 'Harassment',
-  'Stalking': 'Stalking',
-  'Catcalling': 'Catcalling',
-  'Unsafe_Area': 'Unsafe Area',
-  'Assault': 'Assault',
-  'Suspicious_Activity': 'Suspicious Activity',
-};
-
-final Map<String, String> enumTags = {
-  'Harassment': 'Harassment',
-  'Stalking': 'Stalking',
-  'Catcalling': 'Catcalling',
-  'Unsafe Area': 'Unsafe_Area',
-  'Assault': 'Assault',
-  'Suspicious Activity': 'Suspicious_Activity',
+  'Unsafe Area': Icons.dangerous_rounded,
+  'Assault': svgAim,
+  'Suspicious Activity': Icons.visibility_outlined,
 };
 
 class _ProfilePageState extends State<ProfilePage>
@@ -233,9 +216,7 @@ class ReportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rawTag = report['tag'] ?? '';
-    final tag = displayTags[rawTag] ?? rawTag;
-
+    final tag = report['tag'] ?? '';
     final icon = tagIcons[tag] ?? Icons.warning;
 
     return GestureDetector(
