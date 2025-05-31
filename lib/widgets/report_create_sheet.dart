@@ -1,5 +1,6 @@
 import 'package:allycall/services/api_service.dart';
 import 'package:allycall/services/auth_service.dart';
+import 'package:allycall/widgets/message_dialog.dart';
 import 'package:allycall/widgets/places_search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -46,19 +47,18 @@ class _ReportCreateSheetState extends State<ReportCreateSheet> {
     }
   }
 
-  Future<void> _showMessageDialog(String title, String content) async {
+  Future<void> _showMessageDialog(
+    BuildContext context,
+    String title,
+    String content,
+  ) async {
     await showDialog(
       context: context,
       builder:
-          (context) => AlertDialog(
-            title: Text(title),
-            content: Text(content),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
-              ),
-            ],
+          (context) => MessageDialog(
+            title: title,
+            content: content,
+            onContinue: () => Navigator.pop(context),
           ),
     );
   }
@@ -70,6 +70,7 @@ class _ReportCreateSheetState extends State<ReportCreateSheet> {
         _titleController.text.isEmpty ||
         _detailController.text.isEmpty) {
       await _showMessageDialog(
+        context,
         'Incomplete Form',
         'Please complete all fields and make sure you are signed in.',
       );
@@ -90,12 +91,13 @@ class _ReportCreateSheetState extends State<ReportCreateSheet> {
     try {
       await api.post('reports', reportData);
       if (mounted) {
-        await _showMessageDialog('Success', 'Report submitted successfully!');
+        await _showMessageDialog(context,'Success', 'Report submitted successfully!');
         Navigator.pop(context, selectedLatLng);
       }
     } catch (e) {
       debugPrint('Error: $e');
       await _showMessageDialog(
+        context,
         'Error',
         'Something went wrong during submission.',
       );
@@ -120,7 +122,7 @@ class _ReportCreateSheetState extends State<ReportCreateSheet> {
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.close, color: Colors.black,),
+                  icon: const Icon(Icons.close, color: Colors.black),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],

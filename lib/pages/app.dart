@@ -4,7 +4,6 @@ import 'package:allycall/pages/guide_page.dart';
 import 'package:allycall/pages/map_page.dart';
 import 'package:allycall/pages/profile_page.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:allycall/widgets/tab_bar.dart';
 import 'package:allycall/state/global_flags.dart';
 
@@ -35,7 +34,7 @@ class _AppState extends State<App> with SingleTickerProviderStateMixin {
                 backgroundColor: Colors.white,
                 title: Text(
                   'Welcome!',
-                  style: GoogleFonts.livvic(fontWeight: FontWeight.w700),
+                  style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 content: const Text('Your account was successfully created.'),
                 actions: [
