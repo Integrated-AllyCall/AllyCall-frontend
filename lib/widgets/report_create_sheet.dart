@@ -8,15 +8,16 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 final api = ApiService();
 
 class ReportCreateSheet extends StatefulWidget {
-  const ReportCreateSheet({super.key});
+  final LatLng? initialLatLng;
+  const ReportCreateSheet({super.key, this.initialLatLng});
 
   @override
   State<ReportCreateSheet> createState() => _ReportCreateSheetState();
 }
 
 class _ReportCreateSheetState extends State<ReportCreateSheet> {
-  late GoogleMapController mapController;
-  LatLng selectedLatLng = const LatLng(13.7563, 100.5018);
+  late GoogleMapController _mapController;
+  late LatLng _selectedLatLng;
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _detailController = TextEditingController();
   List<String> _tags = [];
@@ -27,6 +28,7 @@ class _ReportCreateSheetState extends State<ReportCreateSheet> {
 
   @override
   void initState() {
+    _selectedLatLng = widget.initialLatLng ?? const LatLng(13.7563, 100.5018);
     super.initState();
     _fetchReportTags();
   }
@@ -81,10 +83,10 @@ class _ReportCreateSheetState extends State<ReportCreateSheet> {
 
     final reportData = {
       "tag": _selectedTag,
-      "title": _titleController.text,
+      "title": _titleController.text.isEmpty ? 'Untitled Report' : _titleController.text,
       "description": _detailController.text,
-      "latitude": selectedLatLng.latitude,
-      "longitude": selectedLatLng.longitude,
+      "latitude": _selectedLatLng.latitude,
+      "longitude": _selectedLatLng.longitude,
       "user_id": userId,
     };
 
@@ -92,7 +94,7 @@ class _ReportCreateSheetState extends State<ReportCreateSheet> {
       await api.post('reports', reportData);
       if (mounted) {
         await _showMessageDialog(context,'Success', 'Report submitted successfully!');
-        Navigator.pop(context, selectedLatLng);
+        Navigator.pop(context, _selectedLatLng);
       }
     } catch (e) {
       debugPrint('Error: $e');
@@ -138,20 +140,20 @@ class _ReportCreateSheetState extends State<ReportCreateSheet> {
                 SizedBox(
                   height: 200,
                   child: GoogleMap(
-                    onMapCreated: (c) => mapController = c,
+                    onMapCreated: (c) => _mapController = c,
                     initialCameraPosition: CameraPosition(
-                      target: selectedLatLng,
+                      target: _selectedLatLng,
                       zoom: 15,
                     ),
                     onCameraMove: (pos) {
                       setState(() {
-                        selectedLatLng = pos.target;
+                        _selectedLatLng = pos.target;
                       });
                     },
                     markers: {
                       Marker(
                         markerId: const MarkerId('report_location'),
-                        position: selectedLatLng,
+                        position: _selectedLatLng,
                       ),
                     },
                     myLocationButtonEnabled: false,
@@ -165,9 +167,9 @@ class _ReportCreateSheetState extends State<ReportCreateSheet> {
                     onPlaceSelected: (lat, lng, desc) {
                       final latLng = LatLng(lat, lng);
                       setState(() {
-                        selectedLatLng = latLng;
+                        _selectedLatLng = latLng;
                       });
-                      mapController.animateCamera(
+                      _mapController.animateCamera(
                         CameraUpdate.newLatLngZoom(latLng, 15),
                       );
                     },
@@ -177,8 +179,8 @@ class _ReportCreateSheetState extends State<ReportCreateSheet> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Lat: ${selectedLatLng.latitude.toStringAsFixed(6)}, '
-              'Lng: ${selectedLatLng.longitude.toStringAsFixed(6)}',
+              'Lat: ${_selectedLatLng.latitude.toStringAsFixed(6)}, '
+              'Lng: ${_selectedLatLng.longitude.toStringAsFixed(6)}',
               style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
             const SizedBox(height: 16),

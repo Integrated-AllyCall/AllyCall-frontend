@@ -51,14 +51,24 @@ class _HomePageState extends State<HomePage> {
   String? _countryName;
   List<Map<String, dynamic>> nearbyReports = [];
   String? _cityName;
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchVideo();
-    loadProfileImage();
-    _fetchCountryFromCoordinates();
-    _fetchNearbyReports();
+    _loadAllData();
+  }
+
+  Future<void> _loadAllData() async {
+    setState(() => isLoading = true);
+    await Future.wait<void>([
+      _fetchVideo(),
+      _loadProfileImage(),
+      _fetchCountryFromCoordinates(),
+      _fetchNearbyReports(),
+    ]);
+
+    setState(() => isLoading = false);
   }
 
   Future<void> _fetchCountryFromCoordinates() async {
@@ -126,7 +136,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void loadProfileImage() async {
+  Future<void> _loadProfileImage() async {
     final image = await AuthService().getProfileImage(size: 40);
     setState(() {
       _profileImage = image;
@@ -136,7 +146,9 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
+      body: isLoading
+    ? const Center(child: CircularProgressIndicator())
+    : Stack(
         children: [
           Container(
             color: const Color(0xFF7C55D4),

@@ -18,6 +18,7 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   GoogleMapController? mapController;
   LatLng _center = const LatLng(13.7563, 100.5018);
+  late LatLng _userLatLng;
   final Set<Marker> _markers = {};
 
   @override
@@ -78,14 +79,14 @@ class _MapPageState extends State<MapPage> {
   Future<void> _initLocation() async {
     try {
       final position = await getCurrentLocation();
-      final userLatLng = LatLng(position.latitude, position.longitude);
+      _userLatLng = LatLng(position.latitude, position.longitude);
 
       setState(() {
-        _center = userLatLng;
+        _center = _userLatLng;
         _markers.add(
           Marker(
             markerId: const MarkerId('current_location'),
-            position: userLatLng,
+            position: _userLatLng,
             infoWindow: const InfoWindow(title: 'You are here'),
             icon: BitmapDescriptor.defaultMarkerWithHue(
               BitmapDescriptor.hueAzure,
@@ -94,8 +95,8 @@ class _MapPageState extends State<MapPage> {
         );
       });
 
-      _fetchNearbyReport(userLatLng.latitude, userLatLng.longitude);
-      mapController?.animateCamera(CameraUpdate.newLatLngZoom(userLatLng, 14));
+      _fetchNearbyReport(_userLatLng.latitude, _userLatLng.longitude);
+      mapController?.animateCamera(CameraUpdate.newLatLngZoom(_userLatLng, 14));
     } catch (e) {
       print("Error getting location: $e");
     }
@@ -181,7 +182,7 @@ class _MapPageState extends State<MapPage> {
                           top: Radius.circular(20),
                         ),
                       ),
-                      builder: (_) => const ReportCreateSheet(),
+                      builder: (_) => ReportCreateSheet(initialLatLng: _userLatLng,),
                     );
 
                 if (reportLocation != null) {
