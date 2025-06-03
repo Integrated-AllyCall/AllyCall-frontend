@@ -66,7 +66,7 @@ class _VideoEditPageState extends State<VideoEditPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Video deleted successfully")),
       );
-      Navigator.pop(context, true);
+      Navigator.pop(context, 'deleted');
     } catch (e) {
       debugPrint("Error deleting video: $e");
       ScaffoldMessenger.of(
@@ -81,14 +81,16 @@ class _VideoEditPageState extends State<VideoEditPage> {
     try {
       await api.put('videos/${widget.video['id']}', {
         "tag": _selectedTag,
-        "title": _titleController.text,
+        "title": _titleController.text.isEmpty
+            ? 'Untitled Video'
+            : _titleController.text,
         "description": _descController.text,
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Video updated successfully")),
       );
-      Navigator.pop(context, true);
+      Navigator.pop(context, 'updated');
     } catch (e) {
       debugPrint("Error updating video: $e");
       ScaffoldMessenger.of(
@@ -218,11 +220,11 @@ class _VideoEditPageState extends State<VideoEditPage> {
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _titleController,
-                            validator:
-                                (val) =>
-                                    val == null || val.isEmpty
-                                        ? 'Please enter title'
-                                        : null,
+                            // validator:
+                            //     (val) =>
+                            //         val == null || val.isEmpty
+                            //             ? 'Please enter title'
+                            //             : null,
                             decoration: const InputDecoration(
                               hintText: 'Name of the video',
                               border: OutlineInputBorder(),
@@ -259,11 +261,11 @@ class _VideoEditPageState extends State<VideoEditPage> {
                           TextFormField(
                             controller: _descController,
                             maxLines: 5,
-                            validator:
-                                (val) =>
-                                    val == null || val.isEmpty
-                                        ? 'Please enter description'
-                                        : null,
+                            // validator:
+                            //     (val) =>
+                            //         val == null || val.isEmpty
+                            //             ? 'Please enter description'
+                            //             : null,
                             decoration: const InputDecoration(
                               hintText: 'Description of the video',
                               border: OutlineInputBorder(),

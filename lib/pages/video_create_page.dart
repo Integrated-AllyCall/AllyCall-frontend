@@ -126,7 +126,7 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
       final uri = Uri.parse('http://10.4.56.28:3000/api/videos');
       final request =
           http.MultipartRequest('POST', uri)
-            ..fields['title'] = _titleController.text
+            ..fields['title'] = _titleController.text.isEmpty? 'Untitled Video' : _titleController.text
             ..fields['description'] = _descController.text
             ..fields['tag'] = _selectedTag!
             ..fields['user_id'] = AuthService().getUserId();
@@ -310,9 +310,9 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
           const SizedBox(height: 8),
           TextFormField(
             controller: _titleController,
-            validator:
-                (val) =>
-                    val == null || val.isEmpty ? 'Please enter title' : null,
+            // validator:
+            //     (val) =>
+            //         val == null || val.isEmpty ? 'Please enter title' : null,
             decoration: const InputDecoration(
               hintText: 'Name of the video',
               border: OutlineInputBorder(),
@@ -341,11 +341,11 @@ class _VideoCreatePageState extends State<VideoCreatePage> {
           TextFormField(
             controller: _descController,
             maxLines: 5,
-            validator:
-                (val) =>
-                    val == null || val.isEmpty
-                        ? 'Please enter description'
-                        : null,
+            // validator:
+            //     (val) =>
+            //         val == null || val.isEmpty
+            //             ? 'Please enter description'
+            //             : null,
             decoration: const InputDecoration(
               hintText: 'Description of the video',
               border: OutlineInputBorder(),

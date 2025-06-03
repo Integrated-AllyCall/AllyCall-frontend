@@ -18,7 +18,7 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   GoogleMapController? mapController;
   LatLng _center = const LatLng(13.7563, 100.5018);
-  late LatLng _userLatLng;
+  late LatLng _userLatLng = const LatLng(13.7563, 100.5018);
   final Set<Marker> _markers = {};
 
   @override

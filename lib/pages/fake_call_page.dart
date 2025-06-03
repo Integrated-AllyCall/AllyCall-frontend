@@ -107,7 +107,7 @@ class _FakeCallPageState extends State<FakeCallPage>
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               sliver: SliverToBoxAdapter(
-                child: ThumbnailGrid(videos: videos, crossAxisCount: 2),
+                child: ThumbnailGrid(videos: videos, crossAxisCount: 2, onRefresh: _handleSearch,),
               ),
             ),
           ],

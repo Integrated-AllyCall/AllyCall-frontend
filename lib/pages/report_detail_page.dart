@@ -74,7 +74,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Report deleted successfully')),
       );
-      Navigator.pop(context, true);
+      Navigator.pop(context, 'deleted');
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -96,8 +96,8 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     );
   }
 
-  void _openEditModal() {
-    showModalBottomSheet(
+  Future<dynamic> _openEditModal() {
+    return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
@@ -128,7 +128,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                         ),
                         Spacer(),
                         IconButton(
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: () => Navigator.pop(context, false),
                           icon: Icon(Icons.close, color: Colors.black),
                         ),
                       ],
@@ -304,7 +304,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                                       ),
                                     ),
                                   );
-                                  Navigator.pop(context, true);
+                                  Navigator.pop(context, 'updated');
                                 } catch (e) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
@@ -365,7 +365,12 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                 ? [
                   IconButton(
                     icon: const Icon(Icons.edit, color: Colors.white),
-                    onPressed: _openEditModal,
+                    onPressed: () async {
+                      final result = await _openEditModal();
+                      if (result == 'deleted') {
+                        Navigator.pop(context, true);
+                      }
+                    },
                   ),
                 ]
                 : null,

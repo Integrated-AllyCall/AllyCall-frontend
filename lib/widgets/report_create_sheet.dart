@@ -17,7 +17,7 @@ class ReportCreateSheet extends StatefulWidget {
 
 class _ReportCreateSheetState extends State<ReportCreateSheet> {
   late GoogleMapController _mapController;
-  late LatLng _selectedLatLng;
+  late LatLng _selectedLatLng = const LatLng(13.7563, 100.5018);
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _detailController = TextEditingController();
   List<String> _tags = [];
@@ -68,17 +68,6 @@ class _ReportCreateSheetState extends State<ReportCreateSheet> {
   Future<void> _submitReport() async {
     final userId = await AuthService().getUserId();
     print('User ID: $userId');
-    if (userId == null ||
-        _titleController.text.isEmpty ||
-        _detailController.text.isEmpty) {
-      await _showMessageDialog(
-        context,
-        'Incomplete Form',
-        'Please complete all fields and make sure you are signed in.',
-      );
-      return;
-    }
-
     setState(() => isSubmitting = true);
 
     final reportData = {

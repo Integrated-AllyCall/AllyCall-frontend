@@ -69,8 +69,10 @@ class _VideoDetailPageState extends State<VideoDetailPage>
                         ),
                       );
 
-                      if (result == true) {
+                      if (result == 'updated') {
                         await _fetchVideo();
+                      } else if (result == 'deleted') {
+                        Navigator.pop(context, true);
                       }
                     },
                   ),
